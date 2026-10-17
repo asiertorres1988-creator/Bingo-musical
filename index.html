@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Bingo Musical</title>
-<meta name="description" content="Bingo musical para jugar en familia: la TV pone las canciones y lleva el marcador, cada móvil recibe su cartón escaneando un QR.">
+<title>Bingo Musical Triana &amp; Family</title>
+<meta name="description" content="Bingo Musical Triana &amp; Family: la TV pone las canciones y lleva el marcador, cada móvil recibe su cartón escaneando un QR.">
 <meta name="theme-color" content="#1c1640">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Nunito:wght@500;700;800&display=swap">
@@ -40,7 +40,9 @@ input,select,textarea{font:inherit;background:var(--night);color:#fff;border:2px
 input[type=checkbox]{width:auto}
 .muted{color:var(--muted)}
 .wordmark{display:flex;align-items:baseline;gap:.35em;font-family:var(--display);font-weight:800}
+.wordmark{flex-wrap:wrap;row-gap:0}
 .wordmark .b{color:var(--sun)} .wordmark .m{color:var(--coral)}
+.wordmark .f{color:var(--teal);font-size:.55em;white-space:nowrap}
 .panel{background:var(--night-2);border-radius:22px;padding:20px}
 .pill{border-radius:999px;padding:.3em .9em;font-weight:800;font-size:14px;background:var(--night-3);white-space:nowrap}
 .pill.on{background:var(--teal);color:var(--ink)} .pill.off{background:#5a3a4a}
@@ -147,7 +149,7 @@ details.setup summary{font-family:var(--display);font-size:22px;cursor:pointer}
 <!-- ============ INICIO ============ -->
 <main id="landing" hidden>
   <div class="balls" aria-hidden="true"><i style="background:var(--coral)"></i><i style="background:var(--sun)"></i><i style="background:var(--teal)"></i></div>
-  <h1 class="wordmark"><span class="b">Bingo</span><span class="m">Musical</span></h1>
+  <h1 class="wordmark"><span class="b">Bingo</span><span class="m">Musical</span><span class="f">Triana &amp; Family</span></h1>
   <p class="muted">Suena un trocito de canción, la buscas en tu cartón y la marcas. Gana quien complete primero una línea y después el cartón entero.</p>
   <div class="choices">
     <button id="goTv" class="teal">Esta pantalla es la TV</button>
@@ -163,7 +165,7 @@ details.setup summary{font-family:var(--display);font-size:22px;cursor:pointer}
 <!-- ============ TV ============ -->
 <main id="tv" hidden>
   <div class="tv-head">
-    <h1 class="wordmark"><span class="b">Bingo</span><span class="m">Musical</span></h1>
+    <h1 class="wordmark"><span class="b">Bingo</span><span class="m">Musical</span><span class="f">Triana &amp; Family</span></h1>
     <div class="qrbox">
       <div id="qr" aria-label="Código QR para unirse"></div>
       <div style="display:grid;gap:6px"><p>Escanea con el móvil para recibir tu cartón</p><div class="room" id="roomCode">·····</div></div>
@@ -251,7 +253,7 @@ details.setup summary{font-family:var(--display);font-size:22px;cursor:pointer}
 <!-- ============ JUGADOR ============ -->
 <main id="player" hidden>
   <div class="p-head">
-    <h1 class="wordmark"><span class="b">Bingo</span><span class="m">Musical</span></h1>
+    <h1 class="wordmark"><span class="b">Bingo</span><span class="m">Musical</span><span class="f">Triana &amp; Family</span></h1>
     <span id="pConn" class="pill off">Conectando…</span>
   </div>
   <div id="pBanner"></div>
