@@ -85,6 +85,15 @@ input[type=checkbox]{width:auto}
 .now-num{font-family:var(--display);font-size:clamp(26px,3vw,40px);color:var(--sun)}
 .now-title{font-family:var(--display);font-size:clamp(30px,4vw,58px);min-height:1.1em;overflow-wrap:anywhere}
 .now-title.hid{color:var(--night-3);letter-spacing:.06em}
+.poster{flex:none;width:clamp(120px,15vw,210px);max-width:100%;border-radius:14px;box-shadow:0 10px 30px #0008;animation:pop .5s ease;object-fit:cover}
+.now-song{font-size:clamp(16px,1.6vw,22px);color:var(--muted);font-weight:700;overflow-wrap:anywhere}
+.now-song b{color:#fff}
+.lists{display:grid;gap:8px}
+.listcard{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;align-items:center;background:var(--night);border-radius:14px;padding:12px 14px;border:2px solid transparent}
+.listcard.active{border-color:var(--teal)}
+.listcard .ln{font-weight:800;font-size:16px}
+.listcard small{color:var(--muted);grid-column:1}
+.listcard button{grid-row:1/3;grid-column:2}
 .bar{height:10px;border-radius:99px;background:var(--night);overflow:hidden}
 .bar>i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--teal),var(--sun));transition:width .25s linear}
 .controls{display:flex;flex-wrap:wrap;gap:10px}
@@ -180,17 +189,19 @@ details.setup summary{font-family:var(--display);font-size:22px;cursor:pointer}
     <section class="panel now">
       <div class="disc-row">
         <div id="disc" class="disc" aria-hidden="true"></div>
+        <img id="nowImg" class="poster" alt="" hidden>
         <div style="min-width:0;display:grid;gap:6px">
           <div class="label">Ahora suena</div>
           <div id="nowNum" class="now-num">Canción 0 de 0</div>
           <div id="nowTitle" class="now-title hid">· · · · ·</div>
+          <div id="nowSong" class="now-song" hidden></div>
         </div>
       </div>
       <div class="bar"><i id="fragBar"></i></div>
       <div class="controls">
         <button id="btnNext" class="big coral">▶ Siguiente canción</button>
         <button id="btnReplay" class="teal">↻ Repetir trocito</button>
-        <button id="btnReveal">Mostrar título</button>
+        <button id="btnReveal">✔ Resolver</button>
         <button id="btnStop" class="ghost">■ Parar</button>
       </div>
       <div>
@@ -207,6 +218,11 @@ details.setup summary{font-family:var(--display);font-size:22px;cursor:pointer}
   <details class="setup" id="setup">
     <summary>Preparar la partida</summary>
     <div class="setup-grid">
+      <section>
+        <h3>⭐ Listas</h3>
+        <p class="muted">Listas preparadas. Al elegir una se cargan sus canciones y se busca la música y las portadas solas.</p>
+        <div id="listsBox" class="lists"></div>
+      </section>
       <section>
         <h3>Buscar canciones (avances de 30 s)</h3>
         <p class="muted">Busca en el catálogo de Deezer (o iTunes) y añade las que quieras. Suenan los avances oficiales de 30 segundos; no hace falta descargar nada.</p>
@@ -295,6 +311,11 @@ const DEFAULT_SONGS = [
  "De cero a héroe","Por primera vez en años","Recuérdame","Un poco loco","Un genio genial",
  "Príncipe Alí","Quiero ser como tú","Pobres almas en desgracia","Bésala","Dos oruguitas"
 ];
+/* Listas preparadas. Cada elemento: [lo que sale en el cartón, canción, búsqueda del audio, búsqueda de la portada] */
+const LISTS = [
+  { id:"bso-pelis", name:"Bandas Sonoras de Pelis", ask:"¿De qué película es?", unit:"película",
+    items: [["Grease", "You're the One That I Want", "You're the One That I Want John Travolta Olivia Newton-John", "Grease soundtrack"], ["Dirty Dancing", "(I've Had) The Time of My Life", "Time of My Life Bill Medley Jennifer Warnes", "Dirty Dancing soundtrack"], ["Titanic", "My Heart Will Go On", "My Heart Will Go On Celine Dion", "Titanic soundtrack"], ["El guardaespaldas", "I Will Always Love You", "I Will Always Love You Whitney Houston", "The Bodyguard soundtrack"], ["Pretty Woman", "Oh, Pretty Woman", "Oh Pretty Woman Roy Orbison", "Pretty Woman soundtrack"], ["Footloose", "Footloose", "Footloose Kenny Loggins", "Footloose soundtrack"], ["Fiebre del sábado noche", "Stayin' Alive", "Stayin' Alive Bee Gees", "Saturday Night Fever soundtrack"], ["Rocky", "Gonna Fly Now", "Gonna Fly Now Bill Conti", "Rocky soundtrack"], ["Top Gun", "Danger Zone", "Danger Zone Kenny Loggins", "Top Gun soundtrack"], ["Los cazafantasmas", "Ghostbusters", "Ghostbusters Ray Parker Jr", "Ghostbusters soundtrack"], ["Rocky III", "Eye of the Tiger", "Eye of the Tiger Survivor", "Rocky III soundtrack"], ["Regreso al futuro", "The Power of Love", "The Power of Love Huey Lewis and the News", "Back to the Future soundtrack"], ["Top Gun", "Take My Breath Away", "Take My Breath Away Berlin", "Top Gun soundtrack"], ["Flashdance", "Maniac", "Maniac Michael Sembello", "Flashdance soundtrack"], ["Flashdance", "What a Feeling", "Flashdance What a Feeling Irene Cara", "Flashdance soundtrack"], ["The Rocky Horror Picture Show", "The Time Warp", "Time Warp Rocky Horror Picture Show", "Rocky Horror Picture Show soundtrack"], ["Ghost", "Unchained Melody", "Unchained Melody Righteous Brothers", "Ghost soundtrack"], ["Shrek", "All Star", "All Star Smash Mouth", "Shrek soundtrack"], ["Shrek 2", "Accidentally in Love", "Accidentally in Love Counting Crows", "Shrek 2 soundtrack"], ["Men in Black", "Men in Black", "Men in Black Will Smith", "Men in Black soundtrack"], ["La historia interminable", "The NeverEnding Story", "The NeverEnding Story Limahl", "NeverEnding Story soundtrack"], ["8 Mile", "Lose Yourself", "Lose Yourself Eminem", "8 Mile soundtrack"], ["Batman Forever", "Kiss from a Rose", "Kiss from a Rose Seal", "Batman Forever soundtrack"], ["Armageddon", "I Don't Want to Miss a Thing", "I Don't Want to Miss a Thing Aerosmith", "Armageddon soundtrack"], ["Rocky IV", "The Final Countdown", "The Final Countdown Europe", "Rocky IV soundtrack"], ["Frozen", "Let It Go (Suéltalo)", "Suéltalo Frozen Gisela", "Frozen banda sonora"], ["El rey león", "Hakuna Matata", "Hakuna Matata El Rey León", "El Rey León banda sonora"], ["El rey león", "Circle of Life (El ciclo sin fin)", "El ciclo sin fin El Rey León", "El Rey León banda sonora"], ["La sirenita", "Under the Sea (Bajo el mar)", "Bajo el mar La Sirenita", "La Sirenita banda sonora"], ["Aladdín", "A Whole New World (Un mundo ideal)", "Un mundo ideal Aladdín", "Aladdin soundtrack"], ["Toy Story", "You've Got a Friend in Me (Hay un amigo en mí)", "Hay un amigo en mí Toy Story", "Toy Story soundtrack"], ["Encanto", "We Don't Talk About Bruno (No se habla de Bruno)", "No se habla de Bruno Encanto", "Encanto banda sonora"], ["Zootrópolis", "Try Everything", "Try Everything Shakira", "Zootopia soundtrack"], ["El rey león", "Can You Feel the Love Tonight", "Can You Feel the Love Tonight Elton John", "El Rey León banda sonora"], ["Aladdín", "Friend Like Me (Un amigo fiel)", "Friend Like Me Aladdin Robin Williams", "Aladdin soundtrack"], ["Mamma Mia!", "Mamma Mia", "Mamma Mia ABBA", "Mamma Mia soundtrack"], ["Mamma Mia!", "Dancing Queen", "Dancing Queen ABBA", "Mamma Mia soundtrack"], ["El club de los cinco", "Don't You (Forget About Me)", "Don't You Forget About Me Simple Minds", "Breakfast Club soundtrack"], ["Reality Bites", "Stay (I Missed You)", "Stay I Missed You Lisa Loeb", "Reality Bites soundtrack"], ["Mad Max: más allá de la cúpula del trueno", "We Don't Need Another Hero", "We Don't Need Another Hero Tina Turner", "Mad Max Beyond Thunderdome soundtrack"]] }
+];
 const $ = s => document.querySelector(s);
 const store = {
   get(k,d){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
@@ -341,9 +362,10 @@ function startTv(){
     songs: Array.isArray(saved.songs) ? saved.songs : DEFAULT_SONGS.map(t => ({t})),   // {t, url?, local?}
     order: saved.order || [], cur: saved.cur ?? -1, revealed: !!saved.revealed,
     gen: saved.gen || randCode(4), winners: saved.winners || {}, starts: saved.starts || {},
-    players: saved.players || {}          // id -> {name, code, marks:[], cells:[]}
+    players: saved.players || {},         // id -> {name, code, marks:[], cells:[]}
+    list: saved.list || null, picks: saved.picks || {}
   };
-  const save = () => store.set("bm_tv2", {room:T.room, songs:T.songs, order:T.order, cur:T.cur, revealed:T.revealed, gen:T.gen, winners:T.winners, starts:T.starts, players:T.players});
+  const save = () => store.set("bm_tv2", {room:T.room, songs:T.songs, order:T.order, cur:T.cur, revealed:T.revealed, gen:T.gen, winners:T.winners, starts:T.starts, players:T.players, list:T.list, picks:T.picks});
   const conns = {};                       // id -> DataConnection
   let localFiles = {};                    // norm(title) -> File
   let peer = null;
@@ -455,15 +477,26 @@ function startTv(){
   }
 
   /* ---------- pintar ---------- */
-  function hasAudio(s){ return !!(s.url || localFiles[norm(s.t)]); }
+  function hasAudio(s){ return !!(s.url || localFiles[norm(s.t)] || (s.alts && s.alts.some(a => a.url))); }
+  function curAlt(si){ const s = T.songs[si]; return s && s.alts ? s.alts[T.picks[si] ?? 0] : null; }
   function renderNow(){
     const total = T.order.length;
     $("#nowNum").textContent = `Canción ${T.cur + 1} de ${total}`;
     const t = $("#nowTitle");
+    const si = T.cur >= 0 ? T.order[T.cur] : -1, s = si >= 0 ? T.songs[si] : null;
+    const img = $("#nowImg"), song = $("#nowSong");
     if(T.cur < 0){ t.textContent = "· · · · ·"; t.className = "now-title hid"; }
-    else if(T.revealed){ t.textContent = T.songs[T.order[T.cur]].t; t.className = "now-title"; }
-    else { t.textContent = "¿Cuál será?"; t.className = "now-title hid"; }
+    else if(T.revealed){ t.textContent = s.t; t.className = "now-title"; }
+    else { t.textContent = (T.list && T.list.ask) || "¿Cuál será?"; t.className = "now-title hid"; }
+    const alt = si >= 0 ? curAlt(si) : null;
+    const showImg = T.revealed && s && s.img;
+    img.onerror = () => { img.hidden = true; $("#disc").hidden = false; };
+    img.hidden = !showImg; if(showImg && img.getAttribute("src") !== s.img) img.src = s.img;
+    $("#disc").hidden = !!showImg;
+    song.hidden = !(T.revealed && alt);
+    if(T.revealed && alt) song.innerHTML = "🎵 <b>" + esc(alt.song) + "</b>";
     $("#btnReveal").disabled = T.cur < 0 || T.revealed;
+    renderLists();
     $("#btnReplay").disabled = T.cur < 0;
     $("#btnNext").disabled = T.cur >= total - 1 || !!T.winners.bingo || T.songs.length < 12;
     const list = $("#playedList");
@@ -498,7 +531,7 @@ function startTv(){
   function renderSongs(){
     $("#songCount").textContent = `(${T.songs.length})`;
     $("#songList").innerHTML = T.songs.length ? T.songs.map((s,i) => {
-      const src = s.url ? "30 s" : s.local ? (localFiles[norm(s.t)] ? "archivo" : "falta archivo") : "sin audio";
+      const src = s.alts ? `${s.alts.filter(a => a.url).length}/${s.alts.length} 🎵` : s.url ? "30 s" : s.local ? (localFiles[norm(s.t)] ? "archivo" : "falta archivo") : "sin audio";
       return `<div class="song"><span class="src${hasAudio(s) ? " ok" : ""}">${src}</span><span class="t" title="${esc(s.t)}">${esc(s.t)}</span><button data-del="${i}" aria-label="Quitar ${esc(s.t)}">×</button></div>`;
     }).join("") : '<div class="empty">La lista está vacía. Busca canciones o carga tus archivos.</div>';
   }
@@ -517,9 +550,17 @@ function startTv(){
     if(T.cur < 0) return;
     const si = T.order[T.cur], s = T.songs[si];
     const file = localFiles[norm(s.t)];
-    if(!file && !s.url){ banner("Esta canción no tiene audio: ponla o cántala, y pulsa «Mostrar título» cuando quieras.", "info"); return; }
+    let src = s;
+    if(s.alts){
+      if(T.picks[si] == null || !s.alts[T.picks[si]] || !s.alts[T.picks[si]].url){
+        const ok = s.alts.map((a,i) => a.url ? i : -1).filter(i => i >= 0);
+        T.picks[si] = ok.length ? ok[Math.floor(Math.random()*ok.length)] : 0; save();
+      }
+      src = s.alts[T.picks[si]];
+    }
+    if(!file && !src.url){ banner("Esta canción no tiene audio: ponla o cántala, y pulsa «Resolver» cuando quieras.", "info"); return; }
     if(curUrl){ URL.revokeObjectURL(curUrl); curUrl = null; }
-    if(file){ curUrl = URL.createObjectURL(file); audio.src = curUrl; } else audio.src = await freshUrl(s);
+    if(file){ curUrl = URL.createObjectURL(file); audio.src = curUrl; } else audio.src = await freshUrl(src);
     await new Promise(res => { if(audio.readyState >= 1) return res(); audio.onloadedmetadata = res; audio.onerror = res; setTimeout(res, 8000); });
     const len = +$("#fragLen").value, dur = isFinite(audio.duration) ? audio.duration : 0;
     if(T.starts[si] == null){
@@ -566,7 +607,7 @@ function startTv(){
   function newGame(){
     stopAudio();
     T.order = shuffle(T.songs.map((_,i) => i)); T.cur = -1; T.revealed = false;
-    T.gen = randCode(4); T.winners = {}; T.starts = {};
+    T.gen = randCode(4); T.winners = {}; T.starts = {}; T.picks = {};
     if(T.songs.length >= 12) for(const id in T.players) dealCard(T.players[id]);
     save(); renderNow(); renderBoard(); renderSongs(); broadcast(); $("#tvBanner").innerHTML = "";
   }
@@ -583,7 +624,7 @@ function startTv(){
     newGame(); drawQr(); startPeer();
   };
   $("#btnDefault").onclick = () => { T.songs = T.songs.concat(DEFAULT_SONGS.map(t => ({t}))); listChanged(); };
-  $("#btnClear").onclick = () => { T.songs = []; listChanged(); };
+  $("#btnClear").onclick = () => { T.songs = []; T.list = null; listChanged(); };
   $("#btnAddManual").onclick = () => {
     const lines = $("#manualBox").value.split("\n").map(s => s.trim().slice(0,50)).filter(Boolean);
     if(!lines.length) return;
@@ -620,7 +661,21 @@ function startTv(){
     const d = await jsonp(`https://api.deezer.com/search?q=${encodeURIComponent(q)}&limit=${limit}&output=jsonp`);
     if(!d || !Array.isArray(d.data)) throw new Error("deezer");
     return d.data.filter(r => r.preview && r.title).map(r => ({ t: cleanTitle(r.title), url: r.preview, dz: r.id,
-      artist: (r.artist && r.artist.name) || "", album: (r.album && r.album.title) || "" }));
+      artist: (r.artist && r.artist.name) || "", album: (r.album && r.album.title) || "",
+      cover: (r.album && (r.album.cover_xl || r.album.cover_big)) || "" }));
+  }
+  async function findCover(q){
+    try{
+      const d = await jsonp(`https://api.deezer.com/search/album?q=${encodeURIComponent(q)}&limit=5&output=jsonp`);
+      const a = d && Array.isArray(d.data) && d.data.find(x => x.cover_xl || x.cover_big);
+      if(a) return a.cover_xl || a.cover_big;
+    }catch(e){}
+    try{
+      const d = await jsonp(`https://itunes.apple.com/search?term=${encodeURIComponent(q)}&media=music&entity=album&country=es&limit=3`);
+      const a = d && d.results && d.results.find(x => x.artworkUrl100);
+      if(a) return a.artworkUrl100.replace("100x100", "600x600");
+    }catch(e){}
+    return "";
   }
   async function searchItunes(q, limit){
     const url = `https://itunes.apple.com/search?term=${encodeURIComponent(q)}&media=music&entity=song&country=es&limit=${limit}`;
@@ -628,7 +683,7 @@ function startTv(){
     try{ const r = await fetch(url); d = await r.json(); }
     catch(e){ d = await jsonp(url); }
     return (d.results || []).filter(r => r.previewUrl && r.trackName).map(r => ({ t: cleanTitle(r.trackName), url: r.previewUrl,
-      artist: r.artistName || "", album: r.collectionName || "" }));
+      artist: r.artistName || "", album: r.collectionName || "", cover: r.artworkUrl100 ? r.artworkUrl100.replace("100x100","600x600") : "" }));
   }
   async function searchAny(q, limit = 50){
     try{ const r = await searchDeezer(q, limit); if(r.length) return r; }catch(e){}
@@ -662,26 +717,66 @@ function startTv(){
     previewAudio.src = lastResults[i].url; previewAudio.play().catch(() => {});
   });
   let finding = false;
-  $("#btnFindAudio").onclick = async () => {
+  async function resolveMissing(){
     if(finding) return;
-    const missing = T.songs.filter(s => !hasAudio(s));
-    if(!missing.length){ banner("Todas las canciones ya tienen audio", "info"); return; }
+    const jobs = [];
+    for(const s of T.songs){
+      if(s.alts){
+        for(const a of s.alts) if(!a.url) jobs.push({ kind:"alt", s, a });
+        if(!s.img && s.imgq) jobs.push({ kind:"img", s });
+      } else if(!hasAudio(s)) jobs.push({ kind:"song", s });
+    }
+    if(!jobs.length){ banner("Todas las canciones ya tienen audio", "info"); return; }
     finding = true; const btn = $("#btnFindAudio"); btn.disabled = true;
     let ok = 0, fail = 0, k = 0, netErr = false;
-    for(const s of missing){
-      k++; btn.textContent = `Buscando ${k} de ${missing.length}…`;
+    for(const j of jobs){
+      k++; btn.textContent = `Buscando ${k} de ${jobs.length}…`;
       try{
-        const res = await searchAny(s.t, 10);
-        const want = norm(s.t);
-        const pick = res.find(r => norm(r.t) === want) || res.find(r => norm(r.t).includes(want) || want.includes(norm(r.t))) || null;
-        if(pick){ s.url = pick.url; s.dz = pick.dz; ok++; } else fail++;
-      }catch(e){ fail++; netErr = true; }
+        if(j.kind === "img"){ j.s.img = await findCover(j.s.imgq); }
+        else if(j.kind === "alt"){
+          const res = await searchAny(j.a.q, 5);
+          if(res[0]){ j.a.url = res[0].url; j.a.dz = res[0].dz; if(!j.s.cover && res[0].cover) j.s.cover = res[0].cover; ok++; } else fail++;
+        } else {
+          const res = await searchAny(j.s.t, 10);
+          const want = norm(j.s.t);
+          const pick = res.find(r => norm(r.t) === want) || res.find(r => norm(r.t).includes(want) || want.includes(norm(r.t))) || null;
+          if(pick){ j.s.url = pick.url; j.s.dz = pick.dz; ok++; } else fail++;
+        }
+      }catch(e){ if(j.kind !== "img"){ fail++; netErr = true; } }
       save(); renderSongs(); renderNow();
     }
+    for(const s of T.songs) if(s.alts && !s.img && s.cover) s.img = s.cover;
+    save(); renderSongs(); renderNow();
     finding = false; btn.disabled = false; btn.textContent = "🔎 Buscar la música de las que no tienen audio";
     if(netErr && !ok) banner("No se ha podido conectar con el buscador de música. Prueba con otra wifi o con datos móviles.", "small");
     else banner(`Música encontrada para ${ok} canciones${fail ? ` · ${fail} sin encontrar (quítalas o búscalas a mano)` : ""}`, fail ? "small" : "info");
-  };
+  }
+  $("#btnFindAudio").onclick = resolveMissing;
+
+  /* ---------- listas preparadas ---------- */
+  function renderLists(){
+    $("#listsBox").innerHTML = LISTS.map(L => {
+      const units = new Set(L.items.map(x => x[0])).size, active = T.list && T.list.id === L.id;
+      return `<div class="listcard${active ? " active" : ""}"><span class="ln">${esc(L.name)}</span>
+        <small>${L.items.length} canciones · ${units} ${esc(L.unit || "títulos")}${units === 1 ? "" : "s"}${active ? " · en juego" : ""}</small>
+        <button class="mini${active ? " ghost" : " coral"}" data-list="${esc(L.id)}">${active ? "Recargar" : "Jugar"}</button></div>`;
+    }).join("");
+  }
+  $("#listsBox").addEventListener("click", e => {
+    const id = e.target.getAttribute && e.target.getAttribute("data-list");
+    const L = id && LISTS.find(x => x.id === id); if(!L) return;
+    const groups = new Map();
+    for(const [label, song, q, imgq] of L.items){
+      const k = norm(label);
+      if(!groups.has(k)) groups.set(k, { t: label, imgq, alts: [] });
+      groups.get(k).alts.push({ song, q });
+    }
+    T.songs = [...groups.values()];
+    T.list = { id: L.id, name: L.name, ask: L.ask };
+    listChanged();
+    banner(`Lista «${L.name}» cargada. Buscando música y portadas…`, "info");
+    resolveMissing();
+  });
   $("#btnSelAll").onclick =() => document.querySelectorAll("#results input[type=checkbox]").forEach(c => c.checked = true);
   $("#btnAddSel").onclick = () => {
     previewAudio.pause();
