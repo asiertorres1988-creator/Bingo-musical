@@ -1,0 +1,733 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Bingo Musical</title>
+<meta name="description" content="Bingo musical para jugar en familia: la TV pone las canciones y lleva el marcador, cada móvil recibe su cartón escaneando un QR.">
+<meta name="theme-color" content="#1c1640">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Nunito:wght@500;700;800&display=swap">
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+/* Layout: TV = escenario a dos columnas (ahora suena | marcador); móvil = cartón a pantalla completa */
+:root{
+  --night:#1c1640; --night-2:#2a2160; --night-3:#382c7a;
+  --paper:#fff4dc; --ink:#2b1f12; --muted:#b9b0e6;
+  --coral:#ff6b5b; --teal:#2ec4b6; --sun:#ffd166; --bad:#ff8a8a;
+  --display:"Baloo 2","Trebuchet MS",system-ui,sans-serif;
+  --body:"Nunito",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{min-height:100%}
+body{margin:0;background:var(--night);color:#fff;font-family:var(--body);font-size:16px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-block:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-bottom,0px));
+  background-image:radial-gradient(circle at 15% 0%,var(--night-3),transparent 45%),radial-gradient(circle at 100% 100%,#3a1f5e,transparent 40%);background-attachment:fixed}
+[hidden]{display:none!important}
+h1,h2,h3{font-family:var(--display);margin:0;line-height:1.05;text-wrap:balance}
+p{margin:0}
+button{font:inherit;cursor:pointer;border:0;border-radius:14px;padding:.7em 1.1em;font-weight:800;color:var(--ink);background:var(--sun)}
+button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible,textarea:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
+button:disabled{opacity:.45;cursor:not-allowed}
+button.ghost{background:transparent;color:#fff;border:2px solid var(--night-3)}
+button.coral{background:var(--coral);color:#fff}
+button.teal{background:var(--teal)}
+button.mini{padding:.3em .7em;font-size:14px;border-radius:10px}
+input,select,textarea{font:inherit;background:var(--night);color:#fff;border:2px solid var(--night-3);border-radius:12px;padding:.6em .8em;width:100%}
+input[type=checkbox]{width:auto}
+.muted{color:var(--muted)}
+.wordmark{display:flex;align-items:baseline;gap:.35em;font-family:var(--display);font-weight:800}
+.wordmark .b{color:var(--sun)} .wordmark .m{color:var(--coral)}
+.panel{background:var(--night-2);border-radius:22px;padding:20px}
+.pill{border-radius:999px;padding:.3em .9em;font-weight:800;font-size:14px;background:var(--night-3);white-space:nowrap}
+.pill.on{background:var(--teal);color:var(--ink)} .pill.off{background:#5a3a4a}
+.banner{background:var(--sun);color:var(--ink);border-radius:22px;padding:16px 22px;font-family:var(--display);font-size:clamp(24px,3.4vw,46px);text-align:center;animation:pop .5s ease}
+.banner.small{font-size:20px;background:var(--bad)}
+.banner.info{font-size:20px;background:var(--teal)}
+@keyframes pop{from{transform:scale(.85);opacity:.3}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* --- inicio --- */
+#landing{max-width:560px;margin:6vh auto 0;display:grid;gap:20px;text-align:center}
+#landing h1{font-size:clamp(48px,11vw,80px);justify-content:center}
+.balls{display:flex;gap:8px;justify-content:center}
+.balls i{width:22px;height:22px;border-radius:50%}
+.choices{display:grid;gap:12px;grid-template-columns:1fr 1fr}
+.choices button{padding:1.1em;font-size:18px}
+.join-row{display:flex;gap:8px}
+@media (max-width:440px){.choices{grid-template-columns:1fr}}
+
+/* --- TV --- */
+#tv{display:grid;gap:18px;max-width:1500px;margin:0 auto}
+.tv-head{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.tv-head h1{font-size:clamp(34px,4vw,56px)}
+.tv-head .status{margin-left:auto;display:flex;gap:10px;flex-wrap:wrap}
+.qrbox{display:flex;gap:14px;align-items:center;background:var(--paper);color:var(--ink);border-radius:18px;padding:12px 16px}
+.qrbox #qr{background:#fff;padding:6px;border-radius:8px;line-height:0}
+.qrbox #qr img,.qrbox #qr canvas{width:130px;height:130px}
+.qrbox .room{font-family:var(--display);font-size:34px;letter-spacing:.12em;color:var(--coral);line-height:1}
+.qrbox p{font-weight:800;max-width:17ch;font-size:15px}
+.tv-grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:18px}
+@media (max-width:900px){.tv-grid{grid-template-columns:1fr}}
+.now{display:grid;gap:18px;align-content:start}
+.disc-row{display:flex;gap:22px;align-items:center}
+.disc{flex:none;width:clamp(100px,13vw,170px);aspect-ratio:1;border-radius:50%;
+  background:repeating-radial-gradient(circle,#15102f 0 3px,#221a4a 3px 5px);position:relative;box-shadow:0 10px 30px #0006}
+.disc::after{content:"";position:absolute;inset:36%;border-radius:50%;background:var(--coral);box-shadow:inset 0 0 0 6px var(--sun)}
+.disc.spin{animation:spin 2.4s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.label{font-size:13px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);font-weight:800}
+.now-num{font-family:var(--display);font-size:clamp(26px,3vw,40px);color:var(--sun)}
+.now-title{font-family:var(--display);font-size:clamp(30px,4vw,58px);min-height:1.1em;overflow-wrap:anywhere}
+.now-title.hid{color:var(--night-3);letter-spacing:.06em}
+.bar{height:10px;border-radius:99px;background:var(--night);overflow:hidden}
+.bar>i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--teal),var(--sun));transition:width .25s linear}
+.controls{display:flex;flex-wrap:wrap;gap:10px}
+.controls .big{font-size:20px;padding:.8em 1.4em}
+.played{display:flex;flex-wrap:wrap;gap:8px}
+.chip{background:var(--paper);color:var(--ink);border-radius:10px;padding:.3em .7em;font-weight:700;font-size:14px}
+.chip b{color:var(--coral);margin-right:.35em;font-variant-numeric:tabular-nums}
+.chip.secret{background:var(--night-3);color:var(--muted)}
+.board{display:grid;gap:12px;align-content:start}
+.board h2{font-size:30px}
+.player{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 14px;align-items:center;background:var(--night);border-radius:16px;padding:12px 16px}
+.player.offline{opacity:.5}
+.player .nm{font-weight:800;font-size:20px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.player .sc{font-family:var(--display);font-size:22px;font-variant-numeric:tabular-nums;color:var(--sun)}
+.player .bar{grid-column:1/-1}
+.player .tags{grid-column:1/-1;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.tag{font-size:12px;font-weight:800;border-radius:6px;padding:.15em .5em;background:var(--teal);color:var(--ink)}
+.tag.gold{background:var(--sun)} .tag.err{background:var(--bad)} .tag.dim{background:var(--night-3);color:var(--muted)}
+.empty{border:2px dashed var(--night-3);border-radius:16px;padding:18px;color:var(--muted)}
+details.setup{background:var(--night-2);border-radius:22px;padding:16px 20px}
+details.setup summary{font-family:var(--display);font-size:22px;cursor:pointer}
+.setup-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:22px;margin-top:14px}
+.setup-grid section{display:grid;gap:10px;align-content:start;min-width:0}
+.setup-grid h3{font-size:18px;color:var(--sun)}
+.setup-grid p{font-size:14px}
+.row{display:flex;gap:8px;align-items:center}
+.songlist{display:grid;gap:4px;max-height:320px;overflow:auto;padding-right:4px}
+.song{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:8px;align-items:center;background:var(--night);border-radius:10px;padding:6px 8px;font-size:14px}
+.song .src{font-size:11px;font-weight:800;border-radius:6px;padding:.1em .45em;background:var(--night-3);color:var(--muted)}
+.song .src.ok{background:var(--teal);color:var(--ink)}
+.song .t{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.song button{background:transparent;color:var(--muted);padding:.1em .5em;font-size:18px}
+.results{display:grid;gap:4px;max-height:300px;overflow:auto}
+.res{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:8px;align-items:center;background:var(--night);border-radius:10px;padding:6px 8px;font-size:14px}
+.res small{display:block;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.res .t{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700}
+.warn{color:var(--sun);font-weight:700;font-size:14px}
+
+/* --- móvil --- */
+#player{max-width:520px;margin:0 auto;display:grid;gap:14px}
+.p-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.p-head h1{font-size:28px}
+.card{background:var(--paper);color:var(--ink);border-radius:22px;padding:12px;box-shadow:0 14px 40px #0007}
+.card-top{display:flex;justify-content:space-between;align-items:baseline;padding:2px 4px 10px;gap:8px}
+.card-top .who{font-family:var(--display);font-size:22px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.card-top .code{font-weight:800;letter-spacing:.15em;color:#7a5a2c;white-space:nowrap}
+.grid{display:grid;gap:6px}
+.cell{aspect-ratio:1;border-radius:12px;background:#fff;border:2px solid #f0dcb0;color:var(--ink);font-weight:800;font-size:12px;line-height:1.15;padding:4px;display:flex;align-items:center;justify-content:center;text-align:center;position:relative;overflow:hidden;overflow-wrap:anywhere;hyphens:auto}
+.grid.g3 .cell{font-size:14px}
+.cell.on{background:var(--coral);border-color:var(--coral);color:#fff}
+.cell.on::after{content:"";position:absolute;width:70%;aspect-ratio:1;border-radius:50%;border:4px solid #ffffff66;transform:rotate(-12deg)}
+.p-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.p-actions button{font-size:20px;padding:.8em}
+.name-form{display:grid;gap:12px}
+.name-form h2{font-size:30px}
+.small-print{font-size:13px;color:var(--muted)}
+.linkish{background:none;color:var(--muted);text-decoration:underline;padding:.2em;font-weight:700}
+</style>
+</head>
+<body>
+
+<!-- ============ INICIO ============ -->
+<main id="landing" hidden>
+  <div class="balls" aria-hidden="true"><i style="background:var(--coral)"></i><i style="background:var(--sun)"></i><i style="background:var(--teal)"></i></div>
+  <h1 class="wordmark"><span class="b">Bingo</span><span class="m">Musical</span></h1>
+  <p class="muted">Suena un trocito de canción, la buscas en tu cartón y la marcas. Gana quien complete primero una línea y después el cartón entero.</p>
+  <div class="choices">
+    <button id="goTv" class="teal">Esta pantalla es la TV</button>
+    <button id="goJoin">Soy un jugador</button>
+  </div>
+  <form id="joinForm" class="panel" style="display:grid;gap:10px;text-align:left" hidden>
+    <label for="joinCode" class="label">Código de sala (lo ves en la TV)</label>
+    <div class="join-row"><input id="joinCode" maxlength="5" autocomplete="off" placeholder="Ej. KM7PQ" style="text-transform:uppercase"><button type="submit" class="coral">Entrar</button></div>
+    <p class="small-print">Lo más fácil es escanear el QR de la TV con la cámara del móvil.</p>
+  </form>
+</main>
+
+<!-- ============ TV ============ -->
+<main id="tv" hidden>
+  <div class="tv-head">
+    <h1 class="wordmark"><span class="b">Bingo</span><span class="m">Musical</span></h1>
+    <div class="qrbox">
+      <div id="qr" aria-label="Código QR para unirse"></div>
+      <div style="display:grid;gap:6px"><p>Escanea con el móvil para recibir tu cartón</p><div class="room" id="roomCode">·····</div></div>
+    </div>
+    <div class="status">
+      <span id="netPill" class="pill off">Conectando…</span>
+      <span id="audioPill" class="pill off">Sin canciones</span>
+    </div>
+  </div>
+  <div id="tvBanner"></div>
+  <div class="tv-grid">
+    <section class="panel now">
+      <div class="disc-row">
+        <div id="disc" class="disc" aria-hidden="true"></div>
+        <div style="min-width:0;display:grid;gap:6px">
+          <div class="label">Ahora suena</div>
+          <div id="nowNum" class="now-num">Canción 0 de 0</div>
+          <div id="nowTitle" class="now-title hid">· · · · ·</div>
+        </div>
+      </div>
+      <div class="bar"><i id="fragBar"></i></div>
+      <div class="controls">
+        <button id="btnNext" class="big coral">▶ Siguiente canción</button>
+        <button id="btnReplay" class="teal">↻ Repetir trocito</button>
+        <button id="btnReveal">Mostrar título</button>
+        <button id="btnStop" class="ghost">■ Parar</button>
+      </div>
+      <div>
+        <div class="label" style="margin-bottom:8px">Ya han sonado</div>
+        <div id="playedList" class="played"></div>
+      </div>
+    </section>
+    <section class="panel board">
+      <h2>Marcador</h2>
+      <div id="players" style="display:grid;gap:10px"></div>
+    </section>
+  </div>
+
+  <details class="setup" id="setup">
+    <summary>Preparar la partida</summary>
+    <div class="setup-grid">
+      <section>
+        <h3>Buscar canciones (avances de 30 s)</h3>
+        <p class="muted">Busca en el catálogo de iTunes y añade las que quieras. Suenan los avances oficiales de 30 segundos; no hace falta descargar nada.</p>
+        <form id="searchForm" class="row"><input id="searchQ" placeholder="Ej. Disney, Frozen, El Rey León…"><button type="submit" class="teal">Buscar</button></form>
+        <div class="row" style="flex-wrap:wrap"><button type="button" class="mini ghost" data-q="Disney canciones">Disney</button><button type="button" class="mini ghost" data-q="Frozen">Frozen</button><button type="button" class="mini ghost" data-q="El Rey León">El Rey León</button><button type="button" class="mini ghost" data-q="Encanto">Encanto</button><button type="button" class="mini ghost" data-q="Vaiana">Vaiana</button><button type="button" class="mini ghost" data-q="Coco">Coco</button></div>
+        <div id="results" class="results"></div>
+        <div class="row" id="resActions" hidden><button id="btnAddSel" class="coral">Añadir seleccionadas</button><button id="btnSelAll" class="mini ghost">Marcar todas</button></div>
+      </section>
+      <section>
+        <h3>O usa tus propios archivos</h3>
+        <p class="muted">MP3, M4A… desde este dispositivo. El nombre del archivo será el título del cartón. Se reproducen aquí y no se suben a ningún sitio. Si recargas la página, vuelve a elegirlos.</p>
+        <input id="files" type="file" accept="audio/*" multiple>
+        <h3 style="margin-top:8px">O escribe títulos a mano</h3>
+        <p class="muted">Para ponerlas desde otro sitio (Spotify, cantadas…). Uno por línea.</p>
+        <textarea id="manualBox" rows="3" placeholder="Hakuna Matata&#10;Libre soy"></textarea>
+        <button id="btnAddManual" class="mini">Añadir títulos</button>
+      </section>
+      <section>
+        <h3>Lista de la partida <span id="songCount" class="muted"></span></h3>
+        <p class="muted">Mínimo 12 canciones (cartón 3×3). Con 24 o más, cartón 4×4. Cambiar la lista reparte cartones nuevos.</p>
+        <div id="songList" class="songlist"></div>
+        <div class="row" style="flex-wrap:wrap"><button id="btnDefault" class="mini ghost">Cargar ejemplo Disney</button><button id="btnClear" class="mini ghost">Vaciar lista</button></div>
+      </section>
+      <section>
+        <h3>Ajustes y partida</h3>
+        <label class="label" for="fragLen">Duración del trocito</label>
+        <select id="fragLen">
+          <option value="8">8 segundos (difícil)</option>
+          <option value="12">12 segundos</option>
+          <option value="15" selected>15 segundos</option>
+          <option value="20">20 segundos</option>
+          <option value="30">30 segundos (fácil)</option>
+        </select>
+        <label class="row" style="font-size:14px"><input id="randStart" type="checkbox" checked> Empezar en un punto al azar</label>
+        <label class="row" style="font-size:14px"><input id="autoReveal" type="checkbox"> Mostrar el título al acabar el trocito</label>
+        <button id="btnNewGame" class="coral">Nueva partida (mismos jugadores, cartones nuevos)</button>
+        <button id="btnNewRoom" class="mini ghost">Sala nueva (borra jugadores y cambia el QR)</button>
+      </section>
+    </div>
+  </details>
+</main>
+
+<!-- ============ JUGADOR ============ -->
+<main id="player" hidden>
+  <div class="p-head">
+    <h1 class="wordmark"><span class="b">Bingo</span><span class="m">Musical</span></h1>
+    <span id="pConn" class="pill off">Conectando…</span>
+  </div>
+  <div id="pBanner"></div>
+
+  <form id="nameForm" class="panel name-form" hidden>
+    <h2>¿Cómo te llamas?</h2>
+    <p class="muted">Tu nombre saldrá en el marcador de la TV.</p>
+    <input id="nameInput" maxlength="18" autocomplete="nickname" placeholder="Ej. Abuela Rosa" required>
+    <button type="submit" class="coral">Dame mi cartón</button>
+  </form>
+
+  <div id="waitBox" class="panel" hidden><p id="waitText">Conectando con la TV…</p></div>
+
+  <div id="cardWrap" hidden>
+    <div class="card">
+      <div class="card-top"><span id="cardWho" class="who"></span><span class="code">Nº <span id="cardCode"></span></span></div>
+      <div id="grid" class="grid"></div>
+    </div>
+    <p id="pPlayed" class="muted" style="margin:12px 2px"></p>
+    <div class="p-actions">
+      <button id="btnLine" class="teal">¡Línea!</button>
+      <button id="btnBingo" class="coral">¡Bingo!</button>
+    </div>
+    <p class="small-print" style="margin-top:12px">Toca una canción cuando la oigas para marcarla; vuelve a tocarla para desmarcarla. Una línea es una fila horizontal completa.</p>
+    <p style="text-align:center;margin-top:6px"><button id="btnRename" class="linkish">Cambiar nombre</button></p>
+  </div>
+</main>
+
+<script>
+"use strict";
+/* ================= Utilidades comunes ================= */
+const PEER_PREFIX = "bingomusical-v1-";
+const CODE_CHARS = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
+const DEFAULT_SONGS = [
+ "Libre soy","Hakuna Matata","Bajo el mar","Un mundo ideal","Hay un amigo en mí","Busca lo más vital",
+ "Colores en el viento","No se habla de Bruno","¿Qué hay más allá?","De nada","El ciclo sin fin",
+ "Esta noche es para amar","Bella y Bestia son","¡Qué festín!","Veo en ti la luz","Bibbidi-Bobbidi-Boo",
+ "Silba mientras trabajas","Supercalifragilisticoespialidoso","Con un poco de azúcar","Mi reflejo",
+ "De cero a héroe","Por primera vez en años","Recuérdame","Un poco loco","Un genio genial",
+ "Príncipe Alí","Quiero ser como tú","Pobres almas en desgracia","Bésala","Dos oruguitas"
+];
+const $ = s => document.querySelector(s);
+const store = {
+  get(k,d){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
+  set(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+};
+function randCode(len){ const a = new Uint32Array(len); crypto.getRandomValues(a); return [...a].map(x => CODE_CHARS[x % CODE_CHARS.length]).join(""); }
+function shuffle(arr){ const a = arr.slice(); for(let i=a.length-1;i>0;i--){ const j = Math.floor(Math.random()*(i+1)); [a[i],a[j]] = [a[j],a[i]]; } return a; }
+const gridSize = n => n >= 24 ? 4 : 3;
+const norm = s => String(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-z0-9]+/g,"");
+function esc(s){ const d = document.createElement("div"); d.textContent = String(s ?? ""); return d.innerHTML; }
+function cleanTitle(s){
+  return String(s).replace(/\.[a-z0-9]{2,4}$/i,"").replace(/^\s*\d+\s*[-_.)]+\s*/,"").replace(/_+/g," ")
+    .replace(/\s*[\(\[][^\)\]]*[\)\]]/g,"").replace(/\s+-\s+(from|de)\s.*$/i,"").replace(/\s+/g," ").trim().slice(0,50);
+}
+let actx;
+function fanfare(){
+  try{
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+    [523,659,784,1047].forEach((f,i)=>{ const o = actx.createOscillator(), g = actx.createGain(); o.type = "triangle"; o.frequency.value = f;
+      const t = actx.currentTime + i*0.13; g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.25,t+0.02); g.gain.exponentialRampToValueAtTime(0.0001,t+0.5);
+      o.connect(g).connect(actx.destination); o.start(t); o.stop(t+0.55); });
+  }catch(e){}
+}
+function show(id){ for(const s of ["landing","tv","player"]) $("#"+s).hidden = (s !== id); }
+const baseUrl = () => location.origin + location.pathname;
+
+/* ================= Arranque ================= */
+const params = new URLSearchParams(location.search);
+if(params.get("sala")) startPlayer(params.get("sala").toUpperCase());
+else if(params.has("tv")) startTv();
+else show("landing");
+$("#goTv").onclick = () => { history.replaceState(null, "", baseUrl() + "?tv"); startTv(); };
+$("#goJoin").onclick = () => { $("#joinForm").hidden = false; $("#joinCode").focus(); };
+$("#joinForm").onsubmit = e => { e.preventDefault(); const c = $("#joinCode").value.trim().toUpperCase(); if(c.length === 5) location.href = baseUrl() + "?sala=" + c; };
+
+/* =====================================================
+   TV: es el "servidor" de la partida
+   ===================================================== */
+function startTv(){
+  show("tv");
+  const saved = store.get("bm_tv2", null) || {};
+  const T = {
+    room: saved.room || randCode(5),
+    songs: Array.isArray(saved.songs) ? saved.songs : DEFAULT_SONGS.map(t => ({t})),   // {t, url?, local?}
+    order: saved.order || [], cur: saved.cur ?? -1, revealed: !!saved.revealed,
+    gen: saved.gen || randCode(4), winners: saved.winners || {}, starts: saved.starts || {},
+    players: saved.players || {}          // id -> {name, code, marks:[], cells:[]}
+  };
+  const save = () => store.set("bm_tv2", {room:T.room, songs:T.songs, order:T.order, cur:T.cur, revealed:T.revealed, gen:T.gen, winners:T.winners, starts:T.starts, players:T.players});
+  const conns = {};                       // id -> DataConnection
+  let localFiles = {};                    // norm(title) -> File
+  let peer = null;
+  const audio = new Audio(); audio.preload = "auto";
+  let fragTimer, fadeTimer, barRAF, curUrl;
+
+  const played = () => T.order.slice(0, T.cur + 1);
+  const playedSet = () => new Set(played());
+
+  /* ---------- cartones ---------- */
+  function dealCard(p){
+    const n = gridSize(T.songs.length);
+    p.cells = shuffle(T.songs.map((_,i)=>i)).slice(0, n*n);
+    p.code = randCode(4); p.marks = []; p.gen = T.gen;
+  }
+  function evalCard(cells, ps){
+    const n = Math.round(Math.sqrt(cells.length)), hit = cells.map(i => ps.has(i));
+    let line = false;
+    for(let r=0;r<n;r++) if(hit.slice(r*n,(r+1)*n).every(Boolean)) line = true;
+    return { hits: hit.filter(Boolean).length, total: cells.length, line, bingo: hit.every(Boolean) };
+  }
+
+  /* ---------- red ---------- */
+  function stateFor(id){
+    const p = T.players[id]; if(!p) return null;
+    const w = T.winners;
+    return { t:"state", name:p.name, code:p.code, n:Math.round(Math.sqrt(p.cells.length)),
+      titles: p.cells.map(i => T.songs[i] ? T.songs[i].t : "?"), marks:p.marks,
+      played: T.cur + 1, total: T.order.length,
+      line: w.line ? w.line.name : null, bingo: w.bingo ? w.bingo.name : null,
+      youLine: !!(w.line && w.line.id === id), youBingo: !!(w.bingo && w.bingo.id === id) };
+  }
+  function send(id, msg){ const c = conns[id]; if(c && c.open){ try{ c.send(msg); }catch(e){} } }
+  function broadcast(){ for(const id in conns) send(id, stateFor(id)); }
+
+  function onData(conn, d){
+    if(!d || typeof d !== "object") return;
+    if(d.t === "hello" && typeof d.id === "string" && d.id.length < 40){
+      const id = d.id, name = String(d.name || "Jugador").trim().slice(0,18) || "Jugador";
+      conn._pid = id;
+      if(conns[id] && conns[id] !== conn){ try{ conns[id].close(); }catch(e){} }
+      conns[id] = conn;
+      let p = T.players[id];
+      if(!p){ p = T.players[id] = { name }; dealCard(p); banner(`${name} se ha unido a la partida`, "info"); }
+      p.name = name;
+      if(p.gen !== T.gen || !p.cells || p.cells.some(i => i >= T.songs.length)) dealCard(p);
+      save(); send(id, stateFor(id)); renderBoard(); return;
+    }
+    const id = conn._pid, p = id && T.players[id]; if(!p) return;
+    if(d.t === "mark" && Number.isInteger(d.i) && d.i >= 0 && d.i < p.cells.length){
+      const m = new Set(p.marks); d.on ? m.add(d.i) : m.delete(d.i); p.marks = [...m]; save(); renderBoard();
+    } else if(d.t === "claim" && (d.type === "line" || d.type === "bingo")){
+      judge(d.type, id);
+    }
+  }
+
+  function startPeer(attempt = 0){
+    setNet("Conectando…", false);
+    peer = new Peer(PEER_PREFIX + T.room, { debug: 0 });
+    peer.on("open", () => setNet("Sala abierta", true));
+    peer.on("connection", conn => {
+      conn.on("data", d => onData(conn, d));
+      conn.on("close", () => { if(conn._pid && conns[conn._pid] === conn){ delete conns[conn._pid]; renderBoard(); } });
+      conn.on("error", () => {});
+    });
+    peer.on("disconnected", () => { setNet("Reconectando…", false); setTimeout(() => { try{ peer.reconnect(); }catch(e){} }, 1500); });
+    peer.on("error", err => {
+      if(err.type === "unavailable-id" && attempt < 8){ try{ peer.destroy(); }catch(e){} setTimeout(() => startPeer(attempt + 1), 2500); setNet("Recuperando la sala…", false); }
+      else if(err.type === "network" || err.type === "server-error" || err.type === "socket-error"){ setNet("Sin conexión a internet", false); }
+      else if(err.type !== "peer-unavailable"){ setNet("Problema de conexión", false); }
+    });
+  }
+  function setNet(text, ok){ const p = $("#netPill"); p.textContent = text; p.className = "pill " + (ok ? "on" : "off"); }
+
+  function drawQr(){
+    $("#roomCode").textContent = T.room;
+    $("#qr").innerHTML = "";
+    try{ new QRCode($("#qr"), { text: baseUrl() + "?sala=" + T.room, width:260, height:260, colorDark:"#1c1640", colorLight:"#ffffff", correctLevel: QRCode.CorrectLevel.M }); }
+    catch(e){ $("#qr").textContent = "QR no disponible"; }
+  }
+
+  /* ---------- jueces ---------- */
+  function judge(type, id){
+    const p = T.players[id]; if(!p) return;
+    const ev = evalCard(p.cells, playedSet());
+    if(type === "line"){
+      if(T.winners.line){ banner(`${p.name} canta línea, pero ya la ganó ${T.winners.line.name}.`, "small"); return; }
+      if(ev.line){ T.winners.line = { id, name: p.name }; save(); banner(`¡LÍNEA para ${p.name}!`); fanfare(); }
+      else banner(`${p.name} ha cantado línea… ¡pero todavía no vale!`, "small");
+    } else {
+      if(T.winners.bingo){ banner(`El bingo ya lo ganó ${T.winners.bingo.name}.`, "small"); return; }
+      if(ev.bingo){ T.winners.bingo = { id, name: p.name }; save(); stopAudio(); banner(`🏆 ¡BINGO! ¡${p.name} gana la partida!`); fanfare(); setTimeout(fanfare, 700); }
+      else banner(`${p.name} ha cantado bingo… ¡pero le faltan canciones!`, "small");
+    }
+    renderNow(); renderBoard(); broadcast();
+  }
+
+  let bannerTimer;
+  function banner(text, kind){
+    $("#tvBanner").innerHTML = `<div class="banner ${kind || ""}">${esc(text)}</div>`;
+    clearTimeout(bannerTimer);
+    bannerTimer = setTimeout(() => { $("#tvBanner").innerHTML = winnersBanner(); }, kind ? 5000 : 12000);
+  }
+  function winnersBanner(){
+    const w = [];
+    if(T.winners.line) w.push("Línea: " + esc(T.winners.line.name));
+    if(T.winners.bingo) w.push("🏆 Bingo: " + esc(T.winners.bingo.name));
+    return w.length ? `<div class="banner" style="font-size:24px">${w.join(" · ")}</div>` : "";
+  }
+
+  /* ---------- pintar ---------- */
+  function hasAudio(s){ return !!(s.url || localFiles[norm(s.t)]); }
+  function renderNow(){
+    const total = T.order.length;
+    $("#nowNum").textContent = `Canción ${T.cur + 1} de ${total}`;
+    const t = $("#nowTitle");
+    if(T.cur < 0){ t.textContent = "· · · · ·"; t.className = "now-title hid"; }
+    else if(T.revealed){ t.textContent = T.songs[T.order[T.cur]].t; t.className = "now-title"; }
+    else { t.textContent = "¿Cuál será?"; t.className = "now-title hid"; }
+    $("#btnReveal").disabled = T.cur < 0 || T.revealed;
+    $("#btnReplay").disabled = T.cur < 0;
+    $("#btnNext").disabled = T.cur >= total - 1 || !!T.winners.bingo || T.songs.length < 12;
+    const list = $("#playedList");
+    list.innerHTML = T.cur < 0 ? '<span class="muted">Todavía ninguna. Pulsa «Siguiente canción» para empezar.</span>' :
+      played().map((si,k) => { const secret = k === T.cur && !T.revealed;
+        return `<span class="chip${secret ? " secret" : ""}"><b>${k+1}</b>${secret ? "???" : esc(T.songs[si].t)}</span>`; }).reverse().join("");
+    const withAudio = T.songs.filter(hasAudio).length, ap = $("#audioPill");
+    ap.textContent = T.songs.length < 12 ? `Faltan canciones (${T.songs.length}/12)` : `${T.songs.length} canciones · ${withAudio} con audio`;
+    ap.className = "pill " + (T.songs.length >= 12 && withAudio ? "on" : "off");
+  }
+  function renderBoard(){
+    const ps = playedSet(), box = $("#players");
+    const rows = Object.entries(T.players).map(([id,p]) => {
+      const good = p.marks.filter(i => ps.has(p.cells[i])).length;
+      return { id, p, good, wrong: p.marks.length - good, online: !!(conns[id] && conns[id].open) };
+    }).sort((a,b) => b.good - a.good || a.p.name.localeCompare(b.p.name));
+    if(!rows.length){ box.innerHTML = '<div class="empty">Aún no hay jugadores. Que cada uno escanee el QR con su móvil y escriba su nombre.</div>'; return; }
+    box.innerHTML = rows.map(r => {
+      const total = r.p.cells.length, pct = Math.round(100 * r.good / total), tags = [];
+      if(T.winners.bingo && T.winners.bingo.id === r.id) tags.push('<span class="tag gold">🏆 BINGO</span>');
+      if(T.winners.line && T.winners.line.id === r.id) tags.push('<span class="tag">LÍNEA</span>');
+      if(r.wrong > 0) tags.push(`<span class="tag err">${r.wrong} marcada${r.wrong > 1 ? "s" : ""} sin sonar</span>`);
+      if(!r.online) tags.push('<span class="tag dim">desconectado</span>');
+      return `<div class="player${r.online ? "" : " offline"}"><div class="nm">${esc(r.p.name)}</div><div class="sc">${r.good}/${total}</div>
+        <div class="bar"><i style="width:${pct}%"></i></div>${tags.length ? `<div class="tags">${tags.join("")}${r.online ? "" : ` <button class="mini ghost" data-kick="${esc(r.id)}">Quitar</button>`}</div>` : ""}</div>`;
+    }).join("");
+  }
+  $("#players").addEventListener("click", e => {
+    const id = e.target.getAttribute && e.target.getAttribute("data-kick");
+    if(id && T.players[id]){ delete T.players[id]; save(); renderBoard(); }
+  });
+  function renderSongs(){
+    $("#songCount").textContent = `(${T.songs.length})`;
+    $("#songList").innerHTML = T.songs.length ? T.songs.map((s,i) => {
+      const src = s.url ? "30 s" : s.local ? (localFiles[norm(s.t)] ? "archivo" : "falta archivo") : "sin audio";
+      return `<div class="song"><span class="src${hasAudio(s) ? " ok" : ""}">${src}</span><span class="t" title="${esc(s.t)}">${esc(s.t)}</span><button data-del="${i}" aria-label="Quitar ${esc(s.t)}">×</button></div>`;
+    }).join("") : '<div class="empty">La lista está vacía. Busca canciones o carga tus archivos.</div>';
+  }
+  $("#songList").addEventListener("click", e => {
+    const i = e.target.getAttribute && e.target.getAttribute("data-del");
+    if(i != null){ T.songs.splice(+i, 1); listChanged(); }
+  });
+
+  /* ---------- audio ---------- */
+  function stopAudio(){
+    clearTimeout(fragTimer); clearInterval(fadeTimer); cancelAnimationFrame(barRAF);
+    audio.pause(); $("#disc").classList.remove("spin"); $("#fragBar").style.width = "0";
+  }
+  async function playCurrent(){
+    stopAudio();
+    if(T.cur < 0) return;
+    const si = T.order[T.cur], s = T.songs[si];
+    const file = localFiles[norm(s.t)];
+    if(!file && !s.url){ banner("Esta canción no tiene audio: ponla o cántala, y pulsa «Mostrar título» cuando quieras.", "info"); return; }
+    if(curUrl){ URL.revokeObjectURL(curUrl); curUrl = null; }
+    if(file){ curUrl = URL.createObjectURL(file); audio.src = curUrl; } else audio.src = s.url;
+    await new Promise(res => { if(audio.readyState >= 1) return res(); audio.onloadedmetadata = res; audio.onerror = res; setTimeout(res, 8000); });
+    const len = +$("#fragLen").value, dur = isFinite(audio.duration) ? audio.duration : 0;
+    if(T.starts[si] == null){
+      let st = 0;
+      if($("#randStart").checked && dur > len + 2){
+        st = dur > 60 ? dur*0.1 + Math.random()*Math.max(0, dur*0.7 - len) : Math.random()*(dur - len);
+      }
+      T.starts[si] = Math.floor(st); save();
+    }
+    try{ audio.currentTime = T.starts[si]; }catch(e){}
+    audio.volume = 1;
+    try{ await audio.play(); }catch(e){ banner("No se ha podido reproducir. Pulsa «Repetir trocito».", "small"); return; }
+    $("#disc").classList.add("spin");
+    const t0 = performance.now();
+    const tick = () => { const p = Math.min(1, (performance.now() - t0) / (len*1000)); $("#fragBar").style.width = (p*100) + "%"; if(p < 1) barRAF = requestAnimationFrame(tick); };
+    tick();
+    fragTimer = setTimeout(() => {
+      let v = 1; fadeTimer = setInterval(() => { v -= 0.1; audio.volume = Math.max(0, v);
+        if(v <= 0){ clearInterval(fadeTimer); stopAudio(); if($("#autoReveal").checked) reveal(); } }, 120);
+    }, Math.max(0, len*1000 - 1200));
+  }
+  function reveal(){ if(T.cur < 0) return; T.revealed = true; save(); renderNow(); }
+
+  $("#btnNext").onclick = () => {
+    if(T.cur >= T.order.length - 1 || T.winners.bingo) return;
+    T.cur++; T.revealed = false; save(); renderNow(); renderBoard(); broadcast(); playCurrent();
+  };
+  $("#btnReplay").onclick = playCurrent;
+  $("#btnReveal").onclick = reveal;
+  $("#btnStop").onclick = stopAudio;
+
+  /* ---------- partida ---------- */
+  function newGame(){
+    stopAudio();
+    T.order = shuffle(T.songs.map((_,i) => i)); T.cur = -1; T.revealed = false;
+    T.gen = randCode(4); T.winners = {}; T.starts = {};
+    if(T.songs.length >= 12) for(const id in T.players) dealCard(T.players[id]);
+    save(); renderNow(); renderBoard(); renderSongs(); broadcast(); $("#tvBanner").innerHTML = "";
+  }
+  function listChanged(){
+    const seen = new Set();
+    T.songs = T.songs.filter(s => { const k = norm(s.t); if(!k || seen.has(k)) return false; seen.add(k); return true; });
+    newGame();
+    if(T.songs.length < 12) banner(`Hacen falta al menos 12 canciones (ahora hay ${T.songs.length}).`, "small");
+  }
+  $("#btnNewGame").onclick = () => { newGame(); banner("Partida nueva: cartones repartidos", "info"); };
+  $("#btnNewRoom").onclick = () => {
+    for(const id in conns){ try{ conns[id].close(); }catch(e){} }
+    T.players = {}; T.room = randCode(5); try{ peer.destroy(); }catch(e){}
+    newGame(); drawQr(); startPeer();
+  };
+  $("#btnDefault").onclick = () => { T.songs = T.songs.concat(DEFAULT_SONGS.map(t => ({t}))); listChanged(); };
+  $("#btnClear").onclick = () => { T.songs = []; listChanged(); };
+  $("#btnAddManual").onclick = () => {
+    const lines = $("#manualBox").value.split("\n").map(s => s.trim().slice(0,50)).filter(Boolean);
+    if(!lines.length) return;
+    T.songs = T.songs.concat(lines.map(t => ({t}))); $("#manualBox").value = ""; listChanged();
+  };
+  $("#files").onchange = e => {
+    const fs = [...e.target.files]; if(!fs.length) return;
+    let added = 0;
+    for(const f of fs){
+      const t = cleanTitle(f.name); if(!t) continue;
+      localFiles[norm(t)] = f;
+      const existing = T.songs.find(s => norm(s.t) === norm(t));
+      if(existing) existing.local = true; else { T.songs.push({ t, local:true }); added++; }
+    }
+    if(added) listChanged(); else { save(); renderSongs(); renderNow(); }
+    banner(`${fs.length} archivos cargados`, "info");
+  };
+
+  /* ---------- búsqueda iTunes (JSONP) ---------- */
+  let lastResults = [];
+  function itunes(term){
+    return new Promise((res, rej) => {
+      const cb = "itcb" + Date.now(), s = document.createElement("script");
+      const timer = setTimeout(() => { cleanup(); rej(new Error("timeout")); }, 10000);
+      function cleanup(){ clearTimeout(timer); delete window[cb]; s.remove(); }
+      window[cb] = d => { cleanup(); res(d); };
+      s.onerror = () => { cleanup(); rej(new Error("red")); };
+      s.src = `https://itunes.apple.com/search?term=${encodeURIComponent(term)}&media=music&entity=song&country=es&limit=60&callback=${cb}`;
+      document.head.appendChild(s);
+    });
+  }
+  const previewAudio = new Audio();
+  async function search(q){
+    q = q.trim(); if(!q) return;
+    $("#results").innerHTML = '<p class="muted">Buscando…</p>'; $("#resActions").hidden = true;
+    try{
+      const d = await itunes(q);
+      const seen = new Set();
+      lastResults = (d.results || []).filter(r => r.previewUrl && r.trackName).map(r => ({ t: cleanTitle(r.trackName), url: r.previewUrl, artist: r.artistName || "", album: r.collectionName || "" }))
+        .filter(r => { const k = norm(r.t); if(!k || seen.has(k)) return false; seen.add(k); return true; });
+      if(!lastResults.length){ $("#results").innerHTML = '<p class="muted">No hay resultados con avance. Prueba con otras palabras.</p>'; return; }
+      $("#results").innerHTML = lastResults.map((r,i) => `<label class="res"><input type="checkbox" data-r="${i}"><span style="min-width:0"><span class="t">${esc(r.t)}</span><small>${esc(r.artist)} · ${esc(r.album)}</small></span><button type="button" class="mini ghost" data-play="${i}" aria-label="Escuchar ${esc(r.t)}">▶</button></label>`).join("");
+      $("#resActions").hidden = false;
+    }catch(e){ $("#results").innerHTML = '<p class="warn">No se ha podido buscar. Comprueba la conexión a internet.</p>'; }
+  }
+  $("#searchForm").onsubmit = e => { e.preventDefault(); search($("#searchQ").value); };
+  document.querySelectorAll("[data-q]").forEach(b => b.onclick = () => { $("#searchQ").value = b.dataset.q; search(b.dataset.q); });
+  $("#results").addEventListener("click", e => {
+    const i = e.target.getAttribute && e.target.getAttribute("data-play");
+    if(i == null) return; e.preventDefault();
+    if(previewAudio.src === lastResults[i].url && !previewAudio.paused){ previewAudio.pause(); return; }
+    previewAudio.src = lastResults[i].url; previewAudio.play().catch(() => {});
+  });
+  $("#btnSelAll").onclick = () => document.querySelectorAll("#results input[type=checkbox]").forEach(c => c.checked = true);
+  $("#btnAddSel").onclick = () => {
+    previewAudio.pause();
+    const sel = [...document.querySelectorAll("#results input:checked")].map(c => lastResults[+c.dataset.r]);
+    if(!sel.length) return;
+    for(const r of sel){ const ex = T.songs.find(s => norm(s.t) === norm(r.t)); if(ex) ex.url = r.url; else T.songs.push({ t:r.t, url:r.url }); }
+    document.querySelectorAll("#results input:checked").forEach(c => c.checked = false);
+    listChanged(); banner(`${sel.length} canciones añadidas`, "info");
+  };
+
+  /* ---------- inicio ---------- */
+  if(!T.order.length || T.order.length !== T.songs.length) T.order = shuffle(T.songs.map((_,i) => i));
+  for(const id in T.players){ const p = T.players[id]; if(!p.cells || p.cells.some(i => i >= T.songs.length)) dealCard(p); }
+  save(); drawQr(); renderNow(); renderBoard(); renderSongs();
+  $("#tvBanner").innerHTML = winnersBanner();
+  if(T.cur < 0) $("#setup").open = true;
+  try{ navigator.wakeLock && navigator.wakeLock.request("screen").catch(() => {}); }catch(e){}
+  document.addEventListener("visibilitychange", () => { if(!document.hidden){ try{ navigator.wakeLock && navigator.wakeLock.request("screen").catch(() => {}); }catch(e){} } });
+  startPeer();
+}
+
+/* =====================================================
+   JUGADOR
+   ===================================================== */
+function startPlayer(room){
+  show("player");
+  const P = store.get("bm_p2", {}) || {};
+  if(!P.id) P.id = randCode(12);
+  const save = () => store.set("bm_p2", P);
+  save();
+  let peer = null, conn = null, S = null, retry = null;
+
+  function setConn(text, ok){ const p = $("#pConn"); p.textContent = text; p.className = "pill " + (ok ? "on" : "off"); }
+  function wait(text){ $("#waitBox").hidden = false; $("#waitText").textContent = text; }
+
+  function connect(){
+    clearTimeout(retry);
+    if(!P.name) return;
+    if(!peer || peer.destroyed){
+      peer = new Peer({ debug: 0 });
+      peer.on("open", openConn);
+      peer.on("disconnected", () => { setTimeout(() => { try{ peer.reconnect(); }catch(e){} }, 1500); });
+      peer.on("error", err => {
+        if(err.type === "peer-unavailable"){ setConn("No encuentro la TV", false); if(!S) wait(`No encuentro la sala ${room}. Comprueba que la TV tiene el bingo abierto. Reintentando…`); }
+        else setConn("Sin conexión", false);
+        scheduleRetry();
+      });
+    } else if(peer.open) openConn();
+  }
+  function openConn(){
+    setConn("Buscando la TV…", false);
+    if(conn){ try{ conn.close(); }catch(e){} }
+    conn = peer.connect(PEER_PREFIX + room, { reliable: true });
+    conn.on("open", () => { setConn("Conectado a la TV", true); conn.send({ t:"hello", id:P.id, name:P.name }); });
+    conn.on("data", d => { if(d && d.t === "state"){ S = d; render(); } });
+    conn.on("close", () => { setConn("Reconectando…", false); scheduleRetry(); });
+    conn.on("error", () => scheduleRetry());
+  }
+  function scheduleRetry(){ clearTimeout(retry); retry = setTimeout(() => { if(!conn || !conn.open) connect(); }, 3000); }
+  function sendMsg(m){ if(conn && conn.open){ try{ conn.send(m); return true; }catch(e){} } return false; }
+
+  function render(){
+    if(!P.name){ $("#nameForm").hidden = false; $("#cardWrap").hidden = true; $("#waitBox").hidden = true; return; }
+    $("#nameForm").hidden = true;
+    if(!S){ $("#cardWrap").hidden = true; wait("Conectando con la TV…"); return; }
+    $("#waitBox").hidden = true; $("#cardWrap").hidden = false;
+    $("#cardWho").textContent = S.name; $("#cardCode").textContent = S.code;
+    const g = $("#grid"); g.className = "grid g" + S.n; g.style.gridTemplateColumns = `repeat(${S.n},1fr)`;
+    const marks = new Set(S.marks || []);
+    g.innerHTML = "";
+    S.titles.forEach((title, k) => {
+      const b = document.createElement("button"); b.type = "button";
+      b.className = "cell" + (marks.has(k) ? " on" : ""); b.textContent = title;
+      b.setAttribute("aria-pressed", marks.has(k) ? "true" : "false");
+      b.onclick = () => {
+        const on = !marks.has(k);
+        if(!sendMsg({ t:"mark", i:k, on })){ setConn("Sin conexión: espera un momento", false); return; }
+        on ? marks.add(k) : marks.delete(k); S.marks = [...marks]; render();
+        if(navigator.vibrate) try{ navigator.vibrate(15); }catch(e){}
+      };
+      g.appendChild(b);
+    });
+    $("#pPlayed").textContent = `Han sonado ${S.played} de ${S.total} canciones · llevas ${marks.size} marcada${marks.size === 1 ? "" : "s"}.`;
+    const parts = [];
+    if(S.line) parts.push(S.youLine ? "¡Has ganado la LÍNEA!" : "Línea: " + esc(S.line));
+    if(S.bingo) parts.push(S.youBingo ? "🏆 ¡HAS GANADO EL BINGO!" : "🏆 Bingo: " + esc(S.bingo));
+    $("#pBanner").innerHTML = parts.length ? `<div class="banner" style="font-size:22px">${parts.join("<br>")}</div>` : "";
+    $("#btnLine").disabled = !!S.line; $("#btnBingo").disabled = !!S.bingo;
+  }
+  function claim(type){
+    if(sendMsg({ t:"claim", type })) $("#pBanner").innerHTML = `<div class="banner info">¡${type === "line" ? "Línea" : "Bingo"} cantado! Mira la TV…</div>`;
+    else setConn("Sin conexión: espera un momento", false);
+  }
+  $("#btnLine").onclick = () => claim("line");
+  $("#btnBingo").onclick = () => claim("bingo");
+  $("#nameForm").onsubmit = e => {
+    e.preventDefault(); const v = $("#nameInput").value.trim().slice(0,18); if(!v) return;
+    P.name = v; save(); render();
+    if(conn && conn.open) conn.send({ t:"hello", id:P.id, name:P.name }); else connect();
+  };
+  $("#btnRename").onclick = () => { $("#nameInput").value = P.name || ""; P.name = ""; save(); render(); };
+  document.addEventListener("visibilitychange", () => { if(!document.hidden && P.name && (!conn || !conn.open)) connect(); });
+
+  render(); connect();
+}
+</script>
+</body>
+</html>
