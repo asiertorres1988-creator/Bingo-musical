@@ -1,4 +1,4 @@
-# 🎵 Bingo Musical
+# 🎵 Bingo Musical Triana & Family
 
 Bingo musical para jugar en familia. La **TV** pone trocitos de canciones y lleva el marcador. Cada jugador escanea un **QR** con su móvil, escribe su nombre y recibe su **cartón**.
 
