@@ -207,7 +207,7 @@ details.setup summary{font-family:var(--display);font-size:22px;cursor:pointer}
     <div class="setup-grid">
       <section>
         <h3>Buscar canciones (avances de 30 s)</h3>
-        <p class="muted">Busca en el catálogo de iTunes y añade las que quieras. Suenan los avances oficiales de 30 segundos; no hace falta descargar nada.</p>
+        <p class="muted">Busca en el catálogo de Deezer (o iTunes) y añade las que quieras. Suenan los avances oficiales de 30 segundos; no hace falta descargar nada.</p>
         <form id="searchForm" class="row"><input id="searchQ" placeholder="Ej. Disney, Frozen, El Rey León…"><button type="submit" class="teal">Buscar</button></form>
         <div class="row" style="flex-wrap:wrap"><button type="button" class="mini ghost" data-q="Disney canciones">Disney</button><button type="button" class="mini ghost" data-q="Frozen">Frozen</button><button type="button" class="mini ghost" data-q="El Rey León">El Rey León</button><button type="button" class="mini ghost" data-q="Encanto">Encanto</button><button type="button" class="mini ghost" data-q="Vaiana">Vaiana</button><button type="button" class="mini ghost" data-q="Coco">Coco</button></div>
         <div id="results" class="results"></div>
@@ -226,6 +226,7 @@ details.setup summary{font-family:var(--display);font-size:22px;cursor:pointer}
         <h3>Lista de la partida <span id="songCount" class="muted"></span></h3>
         <p class="muted">Mínimo 12 canciones (cartón 3×3). Con 24 o más, cartón 4×4. Cambiar la lista reparte cartones nuevos.</p>
         <div id="songList" class="songlist"></div>
+        <button id="btnFindAudio" class="teal">🔎 Buscar la música de las que no tienen audio</button>
         <div class="row" style="flex-wrap:wrap"><button id="btnDefault" class="mini ghost">Cargar ejemplo Disney</button><button id="btnClear" class="mini ghost">Vaciar lista</button></div>
       </section>
       <section>
@@ -516,7 +517,7 @@ function startTv(){
     const file = localFiles[norm(s.t)];
     if(!file && !s.url){ banner("Esta canción no tiene audio: ponla o cántala, y pulsa «Mostrar título» cuando quieras.", "info"); return; }
     if(curUrl){ URL.revokeObjectURL(curUrl); curUrl = null; }
-    if(file){ curUrl = URL.createObjectURL(file); audio.src = curUrl; } else audio.src = s.url;
+    if(file){ curUrl = URL.createObjectURL(file); audio.src = curUrl; } else audio.src = await freshUrl(s);
     await new Promise(res => { if(audio.readyState >= 1) return res(); audio.onloadedmetadata = res; audio.onerror = res; setTimeout(res, 8000); });
     const len = +$("#fragLen").value, dur = isFinite(audio.duration) ? audio.duration : 0;
     if(T.starts[si] == null){
@@ -540,11 +541,22 @@ function startTv(){
   }
   function reveal(){ if(T.cur < 0) return; T.revealed = true; save(); renderNow(); }
 
+  /* iPhone/iPad solo dejan sonar un audio si se "desbloquea" dentro del toque */
+  const SILENCE = "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=";
+  let unlocked = false;
+  function unlockAudio(){
+    if(unlocked) return; unlocked = true;
+    try{ audio.src = SILENCE; const p = audio.play(); if(p) p.then(() => audio.pause()).catch(() => { unlocked = false; }); }catch(e){ unlocked = false; }
+    try{ actx = actx || new (window.AudioContext || window.webkitAudioContext)(); actx.resume && actx.resume(); }catch(e){}
+  }
+  document.addEventListener("pointerdown", unlockAudio, { capture:true });
+
   $("#btnNext").onclick = () => {
+    unlockAudio();
     if(T.cur >= T.order.length - 1 || T.winners.bingo) return;
     T.cur++; T.revealed = false; save(); renderNow(); renderBoard(); broadcast(); playCurrent();
   };
-  $("#btnReplay").onclick = playCurrent;
+  $("#btnReplay").onclick = () => { unlockAudio(); playCurrent(); };
   $("#btnReveal").onclick = reveal;
   $("#btnStop").onclick = stopAudio;
 
@@ -588,28 +600,52 @@ function startTv(){
     banner(`${fs.length} archivos cargados`, "info");
   };
 
-  /* ---------- búsqueda iTunes (JSONP) ---------- */
+  /* ---------- búsqueda de avances: Deezer (JSONP) y, si falla, iTunes ---------- */
   let lastResults = [];
-  function itunes(term){
+  let jsonpN = 0;
+  function jsonp(url){
     return new Promise((res, rej) => {
-      const cb = "itcb" + Date.now(), s = document.createElement("script");
-      const timer = setTimeout(() => { cleanup(); rej(new Error("timeout")); }, 10000);
+      const cb = "bmcb" + Date.now() + "_" + (jsonpN++), s = document.createElement("script");
+      const timer = setTimeout(() => { cleanup(); rej(new Error("timeout")); }, 9000);
       function cleanup(){ clearTimeout(timer); delete window[cb]; s.remove(); }
       window[cb] = d => { cleanup(); res(d); };
       s.onerror = () => { cleanup(); rej(new Error("red")); };
-      s.src = `https://itunes.apple.com/search?term=${encodeURIComponent(term)}&media=music&entity=song&country=es&limit=60&callback=${cb}`;
+      s.src = url + (url.includes("?") ? "&" : "?") + "callback=" + cb;
       document.head.appendChild(s);
     });
+  }
+  async function searchDeezer(q, limit){
+    const d = await jsonp(`https://api.deezer.com/search?q=${encodeURIComponent(q)}&limit=${limit}&output=jsonp`);
+    if(!d || !Array.isArray(d.data)) throw new Error("deezer");
+    return d.data.filter(r => r.preview && r.title).map(r => ({ t: cleanTitle(r.title), url: r.preview, dz: r.id,
+      artist: (r.artist && r.artist.name) || "", album: (r.album && r.album.title) || "" }));
+  }
+  async function searchItunes(q, limit){
+    const url = `https://itunes.apple.com/search?term=${encodeURIComponent(q)}&media=music&entity=song&country=es&limit=${limit}`;
+    let d;
+    try{ const r = await fetch(url); d = await r.json(); }
+    catch(e){ d = await jsonp(url); }
+    return (d.results || []).filter(r => r.previewUrl && r.trackName).map(r => ({ t: cleanTitle(r.trackName), url: r.previewUrl,
+      artist: r.artistName || "", album: r.collectionName || "" }));
+  }
+  async function searchAny(q, limit = 50){
+    try{ const r = await searchDeezer(q, limit); if(r.length) return r; }catch(e){}
+    return searchItunes(q, limit);
+  }
+  /* Los enlaces de Deezer caducan: pedimos uno fresco antes de sonar */
+  async function freshUrl(s){
+    if(!s.dz) return s.url;
+    try{ const d = await jsonp(`https://api.deezer.com/track/${s.dz}?output=jsonp`); if(d && d.preview){ s.url = d.preview; save(); } }catch(e){}
+    return s.url;
   }
   const previewAudio = new Audio();
   async function search(q){
     q = q.trim(); if(!q) return;
     $("#results").innerHTML = '<p class="muted">Buscando…</p>'; $("#resActions").hidden = true;
     try{
-      const d = await itunes(q);
+      const found = await searchAny(q, 60);
       const seen = new Set();
-      lastResults = (d.results || []).filter(r => r.previewUrl && r.trackName).map(r => ({ t: cleanTitle(r.trackName), url: r.previewUrl, artist: r.artistName || "", album: r.collectionName || "" }))
-        .filter(r => { const k = norm(r.t); if(!k || seen.has(k)) return false; seen.add(k); return true; });
+      lastResults = found.filter(r => { const k = norm(r.t); if(!k || seen.has(k)) return false; seen.add(k); return true; });
       if(!lastResults.length){ $("#results").innerHTML = '<p class="muted">No hay resultados con avance. Prueba con otras palabras.</p>'; return; }
       $("#results").innerHTML = lastResults.map((r,i) => `<label class="res"><input type="checkbox" data-r="${i}"><span style="min-width:0"><span class="t">${esc(r.t)}</span><small>${esc(r.artist)} · ${esc(r.album)}</small></span><button type="button" class="mini ghost" data-play="${i}" aria-label="Escuchar ${esc(r.t)}">▶</button></label>`).join("");
       $("#resActions").hidden = false;
@@ -623,12 +659,33 @@ function startTv(){
     if(previewAudio.src === lastResults[i].url && !previewAudio.paused){ previewAudio.pause(); return; }
     previewAudio.src = lastResults[i].url; previewAudio.play().catch(() => {});
   });
-  $("#btnSelAll").onclick = () => document.querySelectorAll("#results input[type=checkbox]").forEach(c => c.checked = true);
+  let finding = false;
+  $("#btnFindAudio").onclick = async () => {
+    if(finding) return;
+    const missing = T.songs.filter(s => !hasAudio(s));
+    if(!missing.length){ banner("Todas las canciones ya tienen audio", "info"); return; }
+    finding = true; const btn = $("#btnFindAudio"); btn.disabled = true;
+    let ok = 0, fail = 0, k = 0, netErr = false;
+    for(const s of missing){
+      k++; btn.textContent = `Buscando ${k} de ${missing.length}…`;
+      try{
+        const res = await searchAny(s.t, 10);
+        const want = norm(s.t);
+        const pick = res.find(r => norm(r.t) === want) || res.find(r => norm(r.t).includes(want) || want.includes(norm(r.t))) || null;
+        if(pick){ s.url = pick.url; s.dz = pick.dz; ok++; } else fail++;
+      }catch(e){ fail++; netErr = true; }
+      save(); renderSongs(); renderNow();
+    }
+    finding = false; btn.disabled = false; btn.textContent = "🔎 Buscar la música de las que no tienen audio";
+    if(netErr && !ok) banner("No se ha podido conectar con el buscador de música. Prueba con otra wifi o con datos móviles.", "small");
+    else banner(`Música encontrada para ${ok} canciones${fail ? ` · ${fail} sin encontrar (quítalas o búscalas a mano)` : ""}`, fail ? "small" : "info");
+  };
+  $("#btnSelAll").onclick =() => document.querySelectorAll("#results input[type=checkbox]").forEach(c => c.checked = true);
   $("#btnAddSel").onclick = () => {
     previewAudio.pause();
     const sel = [...document.querySelectorAll("#results input:checked")].map(c => lastResults[+c.dataset.r]);
     if(!sel.length) return;
-    for(const r of sel){ const ex = T.songs.find(s => norm(s.t) === norm(r.t)); if(ex) ex.url = r.url; else T.songs.push({ t:r.t, url:r.url }); }
+    for(const r of sel){ const ex = T.songs.find(s => norm(s.t) === norm(r.t)); if(ex){ ex.url = r.url; ex.dz = r.dz; } else T.songs.push({ t:r.t, url:r.url, dz:r.dz }); }
     document.querySelectorAll("#results input:checked").forEach(c => c.checked = false);
     listChanged(); banner(`${sel.length} canciones añadidas`, "info");
   };
