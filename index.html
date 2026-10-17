@@ -311,10 +311,10 @@ const DEFAULT_SONGS = [
  "De cero a héroe","Por primera vez en años","Recuérdame","Un poco loco","Un genio genial",
  "Príncipe Alí","Quiero ser como tú","Pobres almas en desgracia","Bésala","Dos oruguitas"
 ];
-/* Listas preparadas. Cada elemento: [lo que sale en el cartón, canción, búsqueda del audio, búsqueda de la portada] */
+/* Listas preparadas. Cada elemento: [lo que sale en el cartón, canción, búsquedas del audio, búsqueda de la portada, artista esperado (a|b)] */
 const LISTS = [
   { id:"bso-pelis", name:"Bandas Sonoras de Pelis", ask:"¿De qué película es?", unit:"película",
-    items: [["Grease", "You're the One That I Want", "You're the One That I Want John Travolta Olivia Newton-John", "Grease soundtrack"], ["Dirty Dancing", "(I've Had) The Time of My Life", "Time of My Life Bill Medley Jennifer Warnes", "Dirty Dancing soundtrack"], ["Titanic", "My Heart Will Go On", "My Heart Will Go On Celine Dion", "Titanic soundtrack"], ["El guardaespaldas", "I Will Always Love You", "I Will Always Love You Whitney Houston", "The Bodyguard soundtrack"], ["Pretty Woman", "Oh, Pretty Woman", "Oh Pretty Woman Roy Orbison", "Pretty Woman soundtrack"], ["Footloose", "Footloose", "Footloose Kenny Loggins", "Footloose soundtrack"], ["Fiebre del sábado noche", "Stayin' Alive", "Stayin' Alive Bee Gees", "Saturday Night Fever soundtrack"], ["Rocky", "Gonna Fly Now", "Gonna Fly Now Bill Conti", "Rocky soundtrack"], ["Top Gun", "Danger Zone", "Danger Zone Kenny Loggins", "Top Gun soundtrack"], ["Los cazafantasmas", "Ghostbusters", "Ghostbusters Ray Parker Jr", "Ghostbusters soundtrack"], ["Rocky III", "Eye of the Tiger", "Eye of the Tiger Survivor", "Rocky III soundtrack"], ["Regreso al futuro", "The Power of Love", "The Power of Love Huey Lewis and the News", "Back to the Future soundtrack"], ["Top Gun", "Take My Breath Away", "Take My Breath Away Berlin", "Top Gun soundtrack"], ["Flashdance", "Maniac", "Maniac Michael Sembello", "Flashdance soundtrack"], ["Flashdance", "What a Feeling", "Flashdance What a Feeling Irene Cara", "Flashdance soundtrack"], ["The Rocky Horror Picture Show", "The Time Warp", "Time Warp Rocky Horror Picture Show", "Rocky Horror Picture Show soundtrack"], ["Ghost", "Unchained Melody", "Unchained Melody Righteous Brothers", "Ghost soundtrack"], ["Shrek", "All Star", "All Star Smash Mouth", "Shrek soundtrack"], ["Shrek 2", "Accidentally in Love", "Accidentally in Love Counting Crows", "Shrek 2 soundtrack"], ["Men in Black", "Men in Black", "Men in Black Will Smith", "Men in Black soundtrack"], ["La historia interminable", "The NeverEnding Story", "The NeverEnding Story Limahl", "NeverEnding Story soundtrack"], ["8 Mile", "Lose Yourself", "Lose Yourself Eminem", "8 Mile soundtrack"], ["Batman Forever", "Kiss from a Rose", "Kiss from a Rose Seal", "Batman Forever soundtrack"], ["Armageddon", "I Don't Want to Miss a Thing", "I Don't Want to Miss a Thing Aerosmith", "Armageddon soundtrack"], ["Rocky IV", "The Final Countdown", "The Final Countdown Europe", "Rocky IV soundtrack"], ["Frozen", "Let It Go (Suéltalo)", "Suéltalo Frozen Gisela", "Frozen banda sonora"], ["El rey león", "Hakuna Matata", "Hakuna Matata El Rey León", "El Rey León banda sonora"], ["El rey león", "Circle of Life (El ciclo sin fin)", "El ciclo sin fin El Rey León", "El Rey León banda sonora"], ["La sirenita", "Under the Sea (Bajo el mar)", "Bajo el mar La Sirenita", "La Sirenita banda sonora"], ["Aladdín", "A Whole New World (Un mundo ideal)", "Un mundo ideal Aladdín", "Aladdin soundtrack"], ["Toy Story", "You've Got a Friend in Me (Hay un amigo en mí)", "Hay un amigo en mí Toy Story", "Toy Story soundtrack"], ["Encanto", "We Don't Talk About Bruno (No se habla de Bruno)", "No se habla de Bruno Encanto", "Encanto banda sonora"], ["Zootrópolis", "Try Everything", "Try Everything Shakira", "Zootopia soundtrack"], ["El rey león", "Can You Feel the Love Tonight", "Can You Feel the Love Tonight Elton John", "El Rey León banda sonora"], ["Aladdín", "Friend Like Me (Un amigo fiel)", "Friend Like Me Aladdin Robin Williams", "Aladdin soundtrack"], ["Mamma Mia!", "Mamma Mia", "Mamma Mia ABBA", "Mamma Mia soundtrack"], ["Mamma Mia!", "Dancing Queen", "Dancing Queen ABBA", "Mamma Mia soundtrack"], ["El club de los cinco", "Don't You (Forget About Me)", "Don't You Forget About Me Simple Minds", "Breakfast Club soundtrack"], ["Reality Bites", "Stay (I Missed You)", "Stay I Missed You Lisa Loeb", "Reality Bites soundtrack"], ["Mad Max: más allá de la cúpula del trueno", "We Don't Need Another Hero", "We Don't Need Another Hero Tina Turner", "Mad Max Beyond Thunderdome soundtrack"]] }
+    items: [["Grease","You're the One That I Want",["You're the One That I Want Grease"],"Grease soundtrack","John Travolta"],["Dirty Dancing","(I've Had) The Time of My Life",["Time of My Life Dirty Dancing"],"Dirty Dancing soundtrack","Bill Medley"],["Titanic","My Heart Will Go On",["My Heart Will Go On Celine Dion"],"Titanic soundtrack","Dion"],["El guardaespaldas","I Will Always Love You",["I Will Always Love You Whitney Houston"],"The Bodyguard soundtrack","Whitney Houston"],["Pretty Woman","Oh, Pretty Woman",["Oh Pretty Woman Roy Orbison"],"Pretty Woman soundtrack","Roy Orbison"],["Footloose","Footloose",["Footloose Kenny Loggins"],"Footloose soundtrack","Kenny Loggins"],["Fiebre del sábado noche","Stayin' Alive",["Stayin' Alive Bee Gees"],"Saturday Night Fever soundtrack","Bee Gees"],["Rocky","Gonna Fly Now",["Gonna Fly Now Bill Conti"],"Rocky soundtrack","Bill Conti"],["Top Gun","Danger Zone",["Danger Zone Kenny Loggins"],"Top Gun soundtrack","Kenny Loggins"],["Los cazafantasmas","Ghostbusters",["Ghostbusters Ray Parker Jr"],"Ghostbusters soundtrack","Ray Parker"],["Rocky III","Eye of the Tiger",["Eye of the Tiger Survivor"],"Rocky III soundtrack","Survivor"],["Regreso al futuro","The Power of Love",["The Power of Love Huey Lewis"],"Back to the Future soundtrack","Huey Lewis"],["Top Gun","Take My Breath Away",["Take My Breath Away Berlin"],"Top Gun soundtrack","Berlin"],["Flashdance","Maniac",["Maniac Michael Sembello"],"Flashdance soundtrack","Michael Sembello"],["Flashdance","What a Feeling",["Flashdance What a Feeling Irene Cara"],"Flashdance soundtrack","Irene Cara"],["The Rocky Horror Picture Show","The Time Warp",["Time Warp Rocky Horror Picture Show soundtrack","Time Warp Richard O'Brien"],"Rocky Horror Picture Show soundtrack","Rocky Horror"],["Ghost","Unchained Melody",["Unchained Melody Righteous Brothers"],"Ghost soundtrack","Righteous Brothers"],["Shrek","All Star",["All Star Smash Mouth"],"Shrek soundtrack","Smash Mouth"],["Shrek 2","Accidentally in Love",["Accidentally in Love Counting Crows"],"Shrek 2 soundtrack","Counting Crows"],["Men in Black","Men in Black",["Men in Black Will Smith"],"Men in Black soundtrack","Will Smith"],["La historia interminable","The NeverEnding Story",["Neverending Story Limahl"],"NeverEnding Story soundtrack","Limahl"],["8 Mile","Lose Yourself",["Lose Yourself Eminem"],"8 Mile soundtrack","Eminem"],["Batman Forever","Kiss from a Rose",["Kiss from a Rose Seal"],"Batman Forever soundtrack","Seal"],["Armageddon","I Don't Want to Miss a Thing",["I Don't Want to Miss a Thing Aerosmith"],"Armageddon soundtrack","Aerosmith"],["Rocky IV","The Final Countdown",["The Final Countdown Europe"],"Rocky IV soundtrack","Europe"],["Frozen","Let It Go (Suéltalo)",["Suéltalo Gisela Frozen","Let It Go Idina Menzel"],"Frozen soundtrack","Gisela|Idina Menzel"],["El rey león","Hakuna Matata",["Hakuna Matata Nathan Lane Ernie Sabella"],"The Lion King soundtrack","Nathan Lane|Ernie Sabella|Jason Weaver"],["El rey león","Circle of Life (El ciclo sin fin)",["Circle of Life Carmen Twillie Lebo M"],"The Lion King soundtrack","Carmen Twillie|Lebo M"],["La sirenita","Under the Sea (Bajo el mar)",["Under the Sea Samuel E. Wright"],"The Little Mermaid soundtrack","Samuel E. Wright"],["Aladdín","A Whole New World (Un mundo ideal)",["A Whole New World Brad Kane Lea Salonga"],"Aladdin soundtrack","Lea Salonga|Brad Kane"],["Toy Story","You've Got a Friend in Me (Hay un amigo en mí)",["You've Got a Friend in Me Randy Newman"],"Toy Story soundtrack","Randy Newman"],["Encanto","We Don't Talk About Bruno (No se habla de Bruno)",["We Don't Talk About Bruno Encanto"],"Encanto soundtrack","Carolina Gait|Encanto"],["Zootrópolis","Try Everything",["Try Everything Shakira"],"Zootopia soundtrack","Shakira"],["El rey león","Can You Feel the Love Tonight",["Can You Feel the Love Tonight Elton John"],"The Lion King soundtrack","Elton John"],["Aladdín","Friend Like Me (Un amigo fiel)",["Friend Like Me Robin Williams"],"Aladdin soundtrack","Robin Williams"],["Mamma Mia!","Mamma Mia",["Mamma Mia ABBA"],"Mamma Mia soundtrack","ABBA"],["Mamma Mia!","Dancing Queen",["Dancing Queen ABBA"],"Mamma Mia soundtrack","ABBA"],["El club de los cinco","Don't You (Forget About Me)",["Don't You Forget About Me Simple Minds"],"Breakfast Club soundtrack","Simple Minds"],["Reality Bites","Stay (I Missed You)",["Stay I Missed You Lisa Loeb"],"Reality Bites soundtrack","Lisa Loeb"],["Mad Max: más allá de la cúpula del trueno","We Don't Need Another Hero",["We Don't Need Another Hero Tina Turner"],"Mad Max Beyond Thunderdome soundtrack","Tina Turner"]] }
 ];
 const $ = s => document.querySelector(s);
 const store = {
@@ -664,6 +664,30 @@ function startTv(){
       artist: (r.artist && r.artist.name) || "", album: (r.album && r.album.title) || "",
       cover: (r.album && (r.album.cover_xl || r.album.cover_big)) || "" }));
   }
+  /* Elige la versión buena: que sea del artista esperado y no karaoke, directo, versión, etc. */
+  const BAD = /\b(karaoke|instrumental|background|backing track|tribute|tributo|cover|covers|in the style|made famous|live|en vivo|directo|remix|sped up|slowed|8.?bit|lullaby|lullabies|piano|cuna|infantil|kids|niños|ensemble|8d)\b/i;
+  function scoreTrack(r, a){
+    let sc = 0;
+    const names = (a.artist || "").split("|").map(norm).filter(Boolean);
+    const art = norm(r.artist);
+    if(names.some(n => art.includes(n) || n.includes(art) && art.length > 3)) sc += 10;
+    if(BAD.test(r.t + " " + r.album + " " + r.artist)) sc -= 8;
+    const want = norm(a.song.replace(/\(.*?\)/g, ""));
+    if(want && norm(r.t).includes(want)) sc += 3;
+    if(/remaster|mix|edit/i.test(r.t)) sc -= 1;
+    return sc;
+  }
+  async function findTrack(a){
+    const qs = Array.isArray(a.q) ? a.q : [a.q];
+    let best = null, bestSc = -1e9;
+    for(const q of qs){
+      let res = [];
+      try{ res = await searchAny(q, 15); }catch(e){}
+      for(const r of res){ const sc = scoreTrack(r, a); if(sc > bestSc){ best = r; bestSc = sc; } }
+      if(bestSc >= 10) break;
+    }
+    return best;
+  }
   async function findCover(q){
     try{
       const d = await jsonp(`https://api.deezer.com/search/album?q=${encodeURIComponent(q)}&limit=5&output=jsonp`);
@@ -734,8 +758,8 @@ function startTv(){
       try{
         if(j.kind === "img"){ j.s.img = await findCover(j.s.imgq); }
         else if(j.kind === "alt"){
-          const res = await searchAny(j.a.q, 5);
-          if(res[0]){ j.a.url = res[0].url; j.a.dz = res[0].dz; if(!j.s.cover && res[0].cover) j.s.cover = res[0].cover; ok++; } else fail++;
+          const best = await findTrack(j.a);
+          if(best){ j.a.url = best.url; j.a.dz = best.dz; j.a.found = (best.t + " · " + best.artist).slice(0, 80); if(!j.s.cover && best.cover) j.s.cover = best.cover; ok++; } else fail++;
         } else {
           const res = await searchAny(j.s.t, 10);
           const want = norm(j.s.t);
@@ -766,10 +790,10 @@ function startTv(){
     const id = e.target.getAttribute && e.target.getAttribute("data-list");
     const L = id && LISTS.find(x => x.id === id); if(!L) return;
     const groups = new Map();
-    for(const [label, song, q, imgq] of L.items){
+    for(const [label, song, q, imgq, artist] of L.items){
       const k = norm(label);
       if(!groups.has(k)) groups.set(k, { t: label, imgq, alts: [] });
-      groups.get(k).alts.push({ song, q });
+      groups.get(k).alts.push({ song, q, artist: artist || "" });
     }
     T.songs = [...groups.values()];
     T.list = { id: L.id, name: L.name, ask: L.ask };
