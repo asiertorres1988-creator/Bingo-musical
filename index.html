@@ -94,6 +94,47 @@ input[type=checkbox]{width:auto}
 .listcard .ln{font-weight:800;font-size:16px}
 .listcard small{color:var(--muted);grid-column:1}
 .listcard button{grid-row:1/3;grid-column:2}
+.modes{display:flex;gap:6px;background:var(--night);padding:5px;border-radius:16px}
+.mode{background:transparent;color:var(--muted);padding:.55em 1em;border-radius:12px;font-size:15px}
+.mode.on{background:var(--sun);color:var(--ink)}
+.q-opts-tv{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.q-opt{border-radius:12px;padding:.55em .8em;font-weight:800;color:#fff;font-size:clamp(15px,1.4vw,20px);display:flex;gap:8px;align-items:center;min-width:0}
+.q-opt span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.q-opt.c0{background:#e2445c}.q-opt.c1{background:#2e86de}.q-opt.c2{background:#e8a317}.q-opt.c3{background:#20a464}
+.q-opt.dim{opacity:.25}
+.q-letter{display:inline-grid;place-items:center;flex:none;width:1.6em;height:1.6em;border-radius:50%;background:#ffffff33;font-family:var(--display);margin-right:4px}
+.q-opt.right{outline:4px solid #fff;outline-offset:2px}
+.q-status{font-weight:800;color:var(--muted)}
+.q-res{display:grid;gap:6px}
+.q-res .r{display:flex;justify-content:space-between;gap:10px;background:var(--night);border-radius:10px;padding:6px 12px;font-weight:700}
+.q-res .r b{color:var(--sun);font-variant-numeric:tabular-nums}
+.q-res .r.no{opacity:.6}
+.rank{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;background:var(--night);border-radius:14px;padding:10px 14px}
+.rank .pos{font-family:var(--display);font-size:24px;color:var(--muted);width:1.6em;text-align:center}
+.rank .nm{font-weight:800;font-size:20px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rank .sc{font-family:var(--display);font-size:24px;color:var(--sun);font-variant-numeric:tabular-nums}
+.rank small{color:var(--teal);font-weight:800;display:block;font-size:13px}
+.rank.offline{opacity:.5}
+#podium{position:fixed;inset:0;z-index:50;background:radial-gradient(circle at 50% 30%,var(--night-3),var(--night) 70%);display:grid;place-items:center;padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));overflow:auto}
+.pod-wrap{width:min(1100px,100%);display:grid;gap:22px;justify-items:center;text-align:center}
+.pod-wrap h2{font-size:clamp(34px,5vw,64px);color:var(--sun)}
+.pod{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;align-items:end;width:100%;max-width:820px}
+.step{display:grid;gap:8px;justify-items:center;animation:pop .6s ease both}
+.step .cup{font-size:clamp(48px,7vw,96px);line-height:1}
+.step .who{font-family:var(--display);font-size:clamp(20px,2.6vw,34px);overflow-wrap:anywhere}
+.step .pts{font-weight:800;color:var(--muted)}
+.step .block{width:100%;border-radius:16px 16px 6px 6px;display:grid;place-items:center;font-family:var(--display);font-size:clamp(36px,5vw,64px);color:var(--ink)}
+.step.g .block{height:200px;background:linear-gradient(#ffe08a,#e5b23a)}
+.step.s .block{height:150px;background:linear-gradient(#eef1f7,#aab3c5)}
+.step.b .block{height:110px;background:linear-gradient(#f0b27a,#b8733d)}
+.step.g{animation-delay:.6s}.step.s{animation-delay:.3s}
+.pod-rest{display:grid;gap:6px;width:min(520px,100%)}
+.qp-opts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.qp-opts button{min-height:110px;font-size:18px;color:#fff;border-radius:18px;padding:12px;overflow-wrap:anywhere}
+.qp-opts button.picked{outline:5px solid #fff;outline-offset:2px}
+.qp-opts button:disabled{opacity:1;cursor:default}
+.qp-opts button.dim{opacity:.3}
+.qp-big{font-family:var(--display);font-size:30px;text-align:center}
 .bar{height:10px;border-radius:99px;background:var(--night);overflow:hidden}
 .bar>i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--teal),var(--sun));transition:width .25s linear}
 .controls{display:flex;flex-wrap:wrap;gap:10px}
@@ -177,7 +218,11 @@ details.setup summary{font-family:var(--display);font-size:22px;cursor:pointer}
     <h1 class="wordmark"><span class="b">Bingo</span><span class="m">Musical</span><span class="f">Triana &amp; Family</span></h1>
     <div class="qrbox">
       <div id="qr" aria-label="Código QR para unirse"></div>
-      <div style="display:grid;gap:6px"><p>Escanea con el móvil para recibir tu cartón</p><div class="room" id="roomCode">·····</div></div>
+      <div style="display:grid;gap:6px"><p id="qrText">Escanea con el móvil para recibir tu cartón</p><div class="room" id="roomCode">·····</div></div>
+    </div>
+    <div class="modes" role="tablist" aria-label="Juego">
+      <button id="modeBingo" class="mode on" role="tab">🎱 Bingo</button>
+      <button id="modeQuiz" class="mode" role="tab">❓ Adivina la canción</button>
     </div>
     <div class="status">
       <span id="netPill" class="pill off">Conectando…</span>
@@ -185,7 +230,7 @@ details.setup summary{font-family:var(--display);font-size:22px;cursor:pointer}
     </div>
   </div>
   <div id="tvBanner"></div>
-  <div class="tv-grid">
+  <div class="tv-grid" id="bingoView">
     <section class="panel now">
       <div class="disc-row">
         <div id="disc" class="disc" aria-hidden="true"></div>
@@ -213,6 +258,45 @@ details.setup summary{font-family:var(--display);font-size:22px;cursor:pointer}
       <h2>Marcador</h2>
       <div id="players" style="display:grid;gap:10px"></div>
     </section>
+  </div>
+
+  <div class="tv-grid" id="quizView" hidden>
+    <section class="panel now">
+      <div class="disc-row">
+        <div id="qDisc" class="disc" aria-hidden="true"></div>
+        <img id="qImg" class="poster" alt="" hidden>
+        <div style="min-width:0;display:grid;gap:6px">
+          <div class="label">Adivina la canción</div>
+          <div id="qNum" class="now-num">Pulsa «Empezar»</div>
+          <div id="qTitle" class="now-title hid">· · · · ·</div>
+          <div id="qSong" class="now-song" hidden></div>
+        </div>
+      </div>
+      <div class="bar"><i id="qBar"></i></div>
+      <div id="qStatus" class="q-status"></div>
+      <div id="qOptsTv" class="q-opts-tv"></div>
+      <div class="controls">
+        <button id="qNext" class="big coral">▶ Empezar</button>
+        <button id="qReplay" class="teal">↻ Repetir trocito</button>
+        <button id="qReveal">👁 Desvelar</button>
+        <button id="qStop" class="ghost">■ Parar</button>
+        <button id="qEnd" class="ghost">🏁 Terminar</button>
+      </div>
+      <div id="qResults" class="q-res"></div>
+    </section>
+    <section class="panel board">
+      <h2>Clasificación</h2>
+      <div id="qBoard" style="display:grid;gap:10px"></div>
+    </section>
+  </div>
+
+  <div id="podium" hidden>
+    <div class="pod-wrap">
+      <h2>🏆 ¡Clasificación final!</h2>
+      <div class="pod" id="podSteps"></div>
+      <div class="pod-rest" id="podRest"></div>
+      <div class="controls" style="justify-content:center"><button id="podAgain" class="coral">Jugar otra vez</button><button id="podClose" class="ghost">Cerrar</button></div>
+    </div>
   </div>
 
   <details class="setup" id="setup">
@@ -258,8 +342,22 @@ details.setup summary{font-family:var(--display);font-size:22px;cursor:pointer}
           <option value="30">30 segundos (fácil)</option>
         </select>
         <label class="row" style="font-size:14px"><input id="randStart" type="checkbox" checked> Empezar en un punto al azar</label>
-        <label class="row" style="font-size:14px"><input id="autoReveal" type="checkbox"> Mostrar el título al acabar el trocito</label>
-        <button id="btnNewGame" class="coral">Nueva partida (mismos jugadores, cartones nuevos)</button>
+        <label class="row" style="font-size:14px"><input id="autoReveal" type="checkbox" checked> Desvelar título y carátula al acabar el trocito</label>
+        <label class="row" style="font-size:14px"><input id="autoNext" type="checkbox" checked> Pasar sola a la siguiente a los 10 segundos</label>
+        <label class="label" for="qCount">Adivina la canción: canciones por partida</label>
+        <select id="qCount">
+          <option value="10">10 canciones</option>
+          <option value="15" selected>15 canciones</option>
+          <option value="20">20 canciones</option>
+          <option value="0">Todas las de la lista</option>
+        </select>
+        <label class="label" for="qTime">Tiempo para responder</label>
+        <select id="qTime">
+          <option value="15">15 segundos</option>
+          <option value="20" selected>20 segundos</option>
+          <option value="30">30 segundos</option>
+        </select>
+        <button id="btnNewGame" class="coral">Nueva partida (mismos jugadores)</button>
         <button id="btnNewRoom" class="mini ghost">Sala nueva (borra jugadores y cambia el QR)</button>
       </section>
     </div>
@@ -278,7 +376,7 @@ details.setup summary{font-family:var(--display);font-size:22px;cursor:pointer}
     <h2>¿Cómo te llamas?</h2>
     <p class="muted">Tu nombre saldrá en el marcador de la TV.</p>
     <input id="nameInput" maxlength="18" autocomplete="nickname" placeholder="Ej. Abuela Rosa" required>
-    <button type="submit" class="coral">Dame mi cartón</button>
+    <button type="submit" class="coral">Entrar a jugar</button>
   </form>
 
   <div id="waitBox" class="panel" hidden><p id="waitText">Conectando con la TV…</p></div>
@@ -295,6 +393,17 @@ details.setup summary{font-family:var(--display);font-size:22px;cursor:pointer}
     </div>
     <p class="small-print" style="margin-top:12px">Toca una canción cuando la oigas para marcarla; vuelve a tocarla para desmarcarla. Una línea es una fila horizontal completa.</p>
     <p style="text-align:center;margin-top:6px"><button id="btnRename" class="linkish">Cambiar nombre</button></p>
+  </div>
+
+  <div id="quizWrap" hidden style="display:grid;gap:14px">
+    <div class="panel" style="display:grid;gap:12px">
+      <div class="row" style="justify-content:space-between"><span class="label" id="qpNum"></span><span class="pill" id="qpTimer"></span></div>
+      <div id="qpAsk" class="qp-big">Esperando canción…</div>
+      <div id="qpOpts" class="qp-opts"></div>
+      <div id="qpResult" class="qp-big" style="font-size:24px"></div>
+    </div>
+    <div class="panel row" style="justify-content:space-between"><span id="qpWho" style="font-weight:800"></span><span id="qpScore" style="font-family:var(--display);font-size:24px;color:var(--sun)"></span></div>
+    <p style="text-align:center"><button id="btnRename2" class="linkish">Cambiar nombre</button></p>
   </div>
 </main>
 
@@ -315,9 +424,13 @@ const DEFAULT_SONGS = [
    posters: cartel fijo de cada película (Wikipedia). */
 const LISTS = [
   { id:"bso-pelis", name:"Bandas Sonoras de Pelis", ask:"¿De qué película es?", unit:"película",
-    items: [["Grease","You're the One That I Want",["You're the One That I Want Grease"],"Grease soundtrack","John Travolta"],["Dirty Dancing","(I've Had) The Time of My Life",["Time of My Life Dirty Dancing"],"Dirty Dancing soundtrack","Bill Medley"],["Titanic","My Heart Will Go On",["My Heart Will Go On Celine Dion"],"Titanic soundtrack","Dion"],["El guardaespaldas","I Will Always Love You",["I Will Always Love You Whitney Houston"],"The Bodyguard soundtrack","Whitney Houston"],["Pretty Woman","Oh, Pretty Woman",["Oh Pretty Woman Roy Orbison"],"Pretty Woman soundtrack","Roy Orbison"],["Footloose","Footloose",["Footloose Kenny Loggins"],"Footloose soundtrack","Kenny Loggins"],["Fiebre del sábado noche","Stayin' Alive",["Stayin' Alive Bee Gees"],"Saturday Night Fever soundtrack","Bee Gees"],["Rocky","Gonna Fly Now",["Gonna Fly Now Bill Conti"],"Rocky soundtrack","Bill Conti"],["Top Gun","Danger Zone",["Danger Zone Kenny Loggins"],"Top Gun soundtrack","Kenny Loggins"],["Los cazafantasmas","Ghostbusters",["Ghostbusters Ray Parker Jr"],"Ghostbusters soundtrack","Ray Parker"],["Rocky III","Eye of the Tiger",["Eye of the Tiger Survivor"],"Rocky III soundtrack","Survivor"],["Regreso al futuro","The Power of Love",["The Power of Love Huey Lewis"],"Back to the Future soundtrack","Huey Lewis"],["Top Gun","Take My Breath Away",["Take My Breath Away Berlin"],"Top Gun soundtrack","Berlin"],["Flashdance","Maniac",["Maniac Michael Sembello"],"Flashdance soundtrack","Michael Sembello"],["Flashdance","What a Feeling",["Flashdance What a Feeling Irene Cara"],"Flashdance soundtrack","Irene Cara"],["The Rocky Horror Picture Show","The Time Warp",["Time Warp Rocky Horror Picture Show soundtrack","Time Warp Richard O'Brien"],"Rocky Horror Picture Show soundtrack","Rocky Horror"],["Ghost","Unchained Melody",["Unchained Melody Righteous Brothers"],"Ghost soundtrack","Righteous Brothers"],["Shrek","All Star",["All Star Smash Mouth"],"Shrek soundtrack","Smash Mouth"],["Shrek 2","Accidentally in Love",["Accidentally in Love Counting Crows"],"Shrek 2 soundtrack","Counting Crows"],["Men in Black","Men in Black",["Men in Black Will Smith"],"Men in Black soundtrack","Will Smith"],["La historia interminable","The NeverEnding Story",["Neverending Story Limahl"],"NeverEnding Story soundtrack","Limahl"],["8 Mile","Lose Yourself",["Lose Yourself Eminem"],"8 Mile soundtrack","Eminem"],["Batman Forever","Kiss from a Rose",["Kiss from a Rose Seal"],"Batman Forever soundtrack","Seal"],["Armageddon","I Don't Want to Miss a Thing",["I Don't Want to Miss a Thing Aerosmith"],"Armageddon soundtrack","Aerosmith"],["Rocky IV","The Final Countdown",["The Final Countdown Europe"],"Rocky IV soundtrack","Europe"],["Frozen","Let It Go (Suéltalo)",["Suéltalo Gisela Frozen","Let It Go Idina Menzel"],"Frozen soundtrack","Gisela|Idina Menzel"],["El rey león","Hakuna Matata",["Hakuna Matata Nathan Lane Ernie Sabella"],"The Lion King soundtrack","Nathan Lane|Ernie Sabella|Jason Weaver"],["El rey león","Circle of Life (El ciclo sin fin)",["Circle of Life Carmen Twillie Lebo M"],"The Lion King soundtrack","Carmen Twillie|Lebo M"],["La sirenita","Under the Sea (Bajo el mar)",["Under the Sea Samuel E. Wright"],"The Little Mermaid soundtrack","Samuel E. Wright"],["Aladdín","A Whole New World (Un mundo ideal)",["A Whole New World Brad Kane Lea Salonga"],"Aladdin soundtrack","Lea Salonga|Brad Kane"],["Toy Story","You've Got a Friend in Me (Hay un amigo en mí)",["You've Got a Friend in Me Randy Newman"],"Toy Story soundtrack","Randy Newman"],["Encanto","We Don't Talk About Bruno (No se habla de Bruno)",["We Don't Talk About Bruno Encanto"],"Encanto soundtrack","Carolina Gait|Encanto"],["Zootrópolis","Try Everything",["Try Everything Shakira"],"Zootopia soundtrack","Shakira"],["El rey león","Can You Feel the Love Tonight",["Can You Feel the Love Tonight Elton John"],"The Lion King soundtrack","Elton John"],["Aladdín","Friend Like Me (Un amigo fiel)",["Friend Like Me Robin Williams"],"Aladdin soundtrack","Robin Williams"],["Mamma Mia!","Mamma Mia",["Mamma Mia ABBA"],"Mamma Mia soundtrack","ABBA"],["Mamma Mia!","Dancing Queen",["Dancing Queen ABBA"],"Mamma Mia soundtrack","ABBA"],["El club de los cinco","Don't You (Forget About Me)",["Don't You Forget About Me Simple Minds"],"Breakfast Club soundtrack","Simple Minds"],["Reality Bites","Stay (I Missed You)",["Stay I Missed You Lisa Loeb"],"Reality Bites soundtrack","Lisa Loeb"],["Mad Max: más allá de la cúpula del trueno","We Don't Need Another Hero",["We Don't Need Another Hero Tina Turner"],"Mad Max Beyond Thunderdome soundtrack","Tina Turner"]],
+    items: [["Grease", "You're the One That I Want", ["You're the One That I Want Grease"], "Grease soundtrack", "John Travolta"], ["Dirty Dancing", "(I've Had) The Time of My Life", ["Time of My Life Dirty Dancing"], "Dirty Dancing soundtrack", "Bill Medley"], ["Titanic", "My Heart Will Go On", ["My Heart Will Go On Celine Dion"], "Titanic soundtrack", "Dion"], ["El guardaespaldas", "I Will Always Love You", ["I Will Always Love You Whitney Houston"], "The Bodyguard soundtrack", "Whitney Houston"], ["Pretty Woman", "Oh, Pretty Woman", ["Oh Pretty Woman Roy Orbison"], "Pretty Woman soundtrack", "Roy Orbison"], ["Footloose", "Footloose", ["Footloose Kenny Loggins"], "Footloose soundtrack", "Kenny Loggins"], ["Fiebre del sábado noche", "Stayin' Alive", ["Stayin' Alive Bee Gees"], "Saturday Night Fever soundtrack", "Bee Gees"], ["Rocky", "Gonna Fly Now", ["Gonna Fly Now Bill Conti"], "Rocky soundtrack", "Bill Conti"], ["Top Gun", "Danger Zone", ["Danger Zone Kenny Loggins"], "Top Gun soundtrack", "Kenny Loggins"], ["Los cazafantasmas", "Ghostbusters", ["Ghostbusters Ray Parker Jr"], "Ghostbusters soundtrack", "Ray Parker"], ["Rocky III", "Eye of the Tiger", ["Eye of the Tiger Survivor"], "Rocky III soundtrack", "Survivor"], ["Regreso al futuro", "The Power of Love", ["The Power of Love Huey Lewis"], "Back to the Future soundtrack", "Huey Lewis"], ["Top Gun", "Take My Breath Away", ["Take My Breath Away Berlin"], "Top Gun soundtrack", "Berlin"], ["Flashdance", "Maniac", ["Maniac Michael Sembello"], "Flashdance soundtrack", "Michael Sembello"], ["Flashdance", "What a Feeling", ["Flashdance What a Feeling Irene Cara"], "Flashdance soundtrack", "Irene Cara"], ["The Rocky Horror Picture Show", "The Time Warp", ["Time Warp Rocky Horror Picture Show soundtrack", "Time Warp Richard O'Brien"], "Rocky Horror Picture Show soundtrack", "Rocky Horror"], ["Ghost", "Unchained Melody", ["Unchained Melody Righteous Brothers"], "Ghost soundtrack", "Righteous Brothers"], ["Shrek", "All Star", ["All Star Smash Mouth"], "Shrek soundtrack", "Smash Mouth"], ["Shrek 2", "Accidentally in Love", ["Accidentally in Love Counting Crows"], "Shrek 2 soundtrack", "Counting Crows"], ["Men in Black", "Men in Black", ["Men in Black Will Smith"], "Men in Black soundtrack", "Will Smith"], ["La historia interminable", "The NeverEnding Story", ["Neverending Story Limahl"], "NeverEnding Story soundtrack", "Limahl"], ["8 Mile", "Lose Yourself", ["Lose Yourself Eminem"], "8 Mile soundtrack", "Eminem"], ["Batman Forever", "Kiss from a Rose", ["Kiss from a Rose Seal"], "Batman Forever soundtrack", "Seal"], ["Armageddon", "I Don't Want to Miss a Thing", ["I Don't Want to Miss a Thing Aerosmith"], "Armageddon soundtrack", "Aerosmith"], ["Rocky IV", "The Final Countdown", ["The Final Countdown Europe"], "Rocky IV soundtrack", "Europe"], ["Frozen", "Let It Go (Suéltalo)", ["Suéltalo Gisela Frozen", "Let It Go Idina Menzel"], "Frozen soundtrack", "Gisela|Idina Menzel"], ["El rey león", "Hakuna Matata", ["Hakuna Matata Nathan Lane Ernie Sabella"], "The Lion King soundtrack", "Nathan Lane|Ernie Sabella|Jason Weaver"], ["El rey león", "Circle of Life (El ciclo sin fin)", ["Circle of Life Carmen Twillie Lebo M"], "The Lion King soundtrack", "Carmen Twillie|Lebo M"], ["La sirenita", "Under the Sea (Bajo el mar)", ["Under the Sea Samuel E. Wright"], "The Little Mermaid soundtrack", "Samuel E. Wright"], ["Aladdín", "A Whole New World (Un mundo ideal)", ["A Whole New World Brad Kane Lea Salonga"], "Aladdin soundtrack", "Lea Salonga|Brad Kane"], ["Toy Story", "You've Got a Friend in Me (Hay un amigo en mí)", ["You've Got a Friend in Me Randy Newman"], "Toy Story soundtrack", "Randy Newman"], ["Encanto", "We Don't Talk About Bruno (No se habla de Bruno)", ["We Don't Talk About Bruno Encanto"], "Encanto soundtrack", "Carolina Gait|Encanto"], ["Zootrópolis", "Try Everything", ["Try Everything Shakira"], "Zootopia soundtrack", "Shakira"], ["El rey león", "Can You Feel the Love Tonight", ["Can You Feel the Love Tonight Elton John"], "The Lion King soundtrack", "Elton John"], ["Aladdín", "Friend Like Me (Un amigo fiel)", ["Friend Like Me Robin Williams"], "Aladdin soundtrack", "Robin Williams"], ["Mamma Mia!", "Mamma Mia", ["Mamma Mia ABBA"], "Mamma Mia soundtrack", "ABBA"], ["Mamma Mia!", "Dancing Queen", ["Dancing Queen ABBA"], "Mamma Mia soundtrack", "ABBA"], ["El club de los cinco", "Don't You (Forget About Me)", ["Don't You Forget About Me Simple Minds"], "Breakfast Club soundtrack", "Simple Minds"], ["Reality Bites", "Stay (I Missed You)", ["Stay I Missed You Lisa Loeb"], "Reality Bites soundtrack", "Lisa Loeb"], ["Mad Max: más allá de la cúpula del trueno", "We Don't Need Another Hero", ["We Don't Need Another Hero Tina Turner"], "Mad Max Beyond Thunderdome soundtrack", "Tina Turner"]],
     posterBase: "https://upload.wikimedia.org/wikipedia/en/",
-    posters: {"Grease":"e/e2/Grease_ver2.jpg","Dirty Dancing":"0/00/Dirty_Dancing.jpg","Titanic":"1/18/Titanic_%281997_film%29_poster.png","El guardaespaldas":"8/8f/The_Bodyguard_1992_Film_Poster.jpg","Pretty Woman":"b/b6/Pretty_woman_movie.jpg","Footloose":"e/e4/FootloosePoster.jpg","Fiebre del sábado noche":"4/45/Saturday_night_fever_movie_poster.jpg","Rocky":"1/18/Rocky_poster.jpg","Top Gun":"4/46/Top_Gun_Movie.jpg","Los cazafantasmas":"2/2f/Ghostbusters_%281984%29_theatrical_poster.png","Rocky III":"f/f4/Rocky_iii_poster.jpg","Regreso al futuro":"d/d2/Back_to_the_Future.jpg","Flashdance":"7/7c/Flashdanceposter.jpg","The Rocky Horror Picture Show":"c/c2/Original_Rocky_Horror_Picture_Show_poster.jpg","Ghost":"4/41/Ghost_%281990_movie_poster%29.jpg","Shrek":"7/7b/Shrek_%282001_animated_feature_film%29.jpg","Shrek 2":"b/b9/Shrek_2_poster.jpg","Men in Black":"f/fb/Men_in_Black_Poster.jpg","La historia interminable":"9/9b/Neverendingstoryposter.jpg","8 Mile":"1/1e/8_Mile_official_poster.jpg","Batman Forever":"9/9d/Batman_Forever_poster.png","Armageddon":"f/fc/Armageddon-poster06.jpg","Rocky IV":"9/95/Rocky_IV.jpg","Frozen":"0/05/Frozen_%282013_film%29_poster.jpg","El rey león":"3/3d/The_Lion_King_poster.jpg","La sirenita":"c/c0/The_Little_Mermaid_%28Official_1989_Film_Poster%29.png","Aladdín":"b/bd/Aladdin_%281992_Disney_film%29_poster.jpg","Toy Story":"1/13/Toy_Story.jpg","Encanto":"8/83/Encanto_poster.jpg","Zootrópolis":"9/96/Zootopia_%28movie_poster%29.jpg","Mamma Mia!":"9/95/Mamma_Mia_%282008%29_US_poster.jpg","El club de los cinco":"d/d1/The_Breakfast_Club_poster.jpg","Reality Bites":"9/95/Realitybitesposter.jpg","Mad Max: más allá de la cúpula del trueno":"e/e0/Mad_max_beyond_thunderdome.jpg"} }
+    posters: {"Grease": "e/e2/Grease_ver2.jpg", "Dirty Dancing": "0/00/Dirty_Dancing.jpg", "Titanic": "1/18/Titanic_%281997_film%29_poster.png", "El guardaespaldas": "8/8f/The_Bodyguard_1992_Film_Poster.jpg", "Pretty Woman": "b/b6/Pretty_woman_movie.jpg", "Footloose": "e/e4/FootloosePoster.jpg", "Fiebre del sábado noche": "4/45/Saturday_night_fever_movie_poster.jpg", "Rocky": "1/18/Rocky_poster.jpg", "Top Gun": "4/46/Top_Gun_Movie.jpg", "Los cazafantasmas": "2/2f/Ghostbusters_%281984%29_theatrical_poster.png", "Rocky III": "f/f4/Rocky_iii_poster.jpg", "Regreso al futuro": "d/d2/Back_to_the_Future.jpg", "Flashdance": "7/7c/Flashdanceposter.jpg", "The Rocky Horror Picture Show": "c/c2/Original_Rocky_Horror_Picture_Show_poster.jpg", "Ghost": "4/41/Ghost_%281990_movie_poster%29.jpg", "Shrek": "7/7b/Shrek_%282001_animated_feature_film%29.jpg", "Shrek 2": "b/b9/Shrek_2_poster.jpg", "Men in Black": "f/fb/Men_in_Black_Poster.jpg", "La historia interminable": "9/9b/Neverendingstoryposter.jpg", "8 Mile": "1/1e/8_Mile_official_poster.jpg", "Batman Forever": "9/9d/Batman_Forever_poster.png", "Armageddon": "f/fc/Armageddon-poster06.jpg", "Rocky IV": "9/95/Rocky_IV.jpg", "Frozen": "0/05/Frozen_%282013_film%29_poster.jpg", "El rey león": "3/3d/The_Lion_King_poster.jpg", "La sirenita": "c/c0/The_Little_Mermaid_%28Official_1989_Film_Poster%29.png", "Aladdín": "b/bd/Aladdin_%281992_Disney_film%29_poster.jpg", "Toy Story": "1/13/Toy_Story.jpg", "Encanto": "8/83/Encanto_poster.jpg", "Zootrópolis": "9/96/Zootopia_%28movie_poster%29.jpg", "Mamma Mia!": "9/95/Mamma_Mia_%282008%29_US_poster.jpg", "El club de los cinco": "d/d1/The_Breakfast_Club_poster.jpg", "Reality Bites": "9/95/Realitybitesposter.jpg", "Mad Max: más allá de la cúpula del trueno": "e/e0/Mad_max_beyond_thunderdome.jpg"} },
+  { id:"pelis-disney", name:"Pelis Disney", ask:"¿De qué película es?", unit:"película",
+    items: [["El rey león", "Hakuna Matata", ["Hakuna Matata El Rey León Banda Sonora Original", "Hakuna Matata Guillermo Romero"], "", "Guillermo Romero|Miguel Ángel Jenner"], ["El rey león", "El ciclo de la vida", ["El ciclo de la vida Tata Vega", "El ciclo sin fin El Rey León"], "", "Tata Vega"], ["El rey león", "Yo voy a ser el rey león", ["Yo voy a ser el rey león Marc Pociello", "Yo voy a ser el rey león El Rey León"], "", "Marc Pociello"], ["El rey león", "Esta noche es para amar", ["Esta noche es para amar Sergio Zamora", "Esta noche es para amar El Rey León"], "", "Sergio Zamora|Ángela Aloy"], ["La sirenita", "Bajo el mar", ["Bajo el mar Michael Cruz", "Bajo el mar La Sirenita"], "", "Michael Cruz"], ["La sirenita", "Parte de él", ["Parte de él María Caneda", "Parte de él La Sirenita"], "", "María Caneda"], ["La sirenita", "Bésala", ["Bésala Michael Cruz", "Bésala La Sirenita"], "", "Michael Cruz"], ["Aladdín", "Un mundo ideal", ["Un mundo ideal Analy Demián Bichir", "Un mundo ideal Aladdín"], "", "Analy|Demián Bichir"], ["Aladdín", "Un amigo fiel", ["Un amigo fiel José María Guzmán", "Un amigo fiel Aladdín"], "", "José María Guzmán"], ["Aladdín", "Príncipe Alí", ["Príncipe Alí Miguel Ángel Jenner", "Príncipe Alí Aladdín"], "", "Miguel Ángel Jenner"], ["Pocahontas", "Colores en el viento", ["Colores en el viento Carmen López", "Colores en el viento Pocahontas"], "", "Carmen López"], ["Pocahontas", "Río abajo", ["Río abajo Carmen López Pocahontas", "Río abajo Pocahontas"], "", "Carmen López"], ["La bella y la bestia", "Bella y Bestia son", ["Bella y Bestia son Michelle", "Bella y Bestia son La Bella y la Bestia"], "", "Michelle"], ["La bella y la bestia", "¡Qué festín!", ["Qué festín Miguel Ángel Jenner", "Qué festín La Bella y la Bestia"], "", "Miguel Ángel Jenner"], ["Frozen: El reino del hielo", "Suéltalo", ["Suéltalo Gisela Frozen"], "", "Gisela"], ["Frozen: El reino del hielo", "Hazme un muñeco de nieve", ["Hazme un muñeco de nieve Frozen"], "", "Naima Barroso|Emma Amselem|Carmen López"], ["Frozen: El reino del hielo", "Por primera vez en años", ["Por primera vez en años Frozen Gisela"], "", "Carmen López|Gisela"], ["Frozen: El reino del hielo", "En verano", ["En verano Miguel Antelo Frozen", "En verano Frozen Olaf"], "", "Miguel Antelo"], ["Frozen: El reino del hielo", "La puerta hacia el amor", ["La puerta hacia el amor Frozen"], "", "Carmen López|Toni Menguiano|Tony Menguiano"], ["Coco", "Recuérdame", ["Recuérdame Marco Antonio Solís Coco"], "", "Marco Antonio Solís"], ["Coco", "Un poco loco", ["Un poco loco Coco Gael García Bernal"], "", "Gael García Bernal|Luis Ángel Gómez"], ["Coco", "El latido de mi corazón", ["El latido de mi corazón Carlos Rivera"], "", "Carlos Rivera"], ["Encanto", "No se habla de Bruno", ["No se habla de Bruno Encanto Olga Lucía Vives"], "", "Olga Lucía Vives|Mauro Castillo"], ["Encanto", "Dos oruguitas", ["Dos oruguitas Sebastián Yatra"], "", "Sebastián Yatra"], ["Encanto", "La familia Madrigal", ["La familia Madrigal Encanto Olga Lucía Vives"], "", "Olga Lucía Vives"], ["Vaiana", "Qué hay más allá", ["Qué hay más allá María Parrado Vaiana"], "", "María Parrado"], ["Vaiana", "De nada", ["De nada David Bisbal Vaiana"], "", "David Bisbal"], ["Vaiana", "Saber volver", ["Saber volver María Parrado Vaiana", "Saber volver Vaiana"], "", "María Parrado|Opetaia"], ["Zootrópolis", "Try Everything (Inténtalo todo)", ["Try Everything Shakira"], "", "Shakira"], ["Red", "Nadie como tú (Nobody Like U)", ["Nobody Like U 4*TOWN", "Nobody Like U Turning Red"], "", "4*TOWN|4 TOWN"], ["Toy Story", "Hay un amigo en mí", ["Hay un amigo en mí Tony Cruz Toy Story"], "", "Tony Cruz"], ["Toy Story", "Yo soy tu amigo fiel", ["Yo soy tu amigo fiel Tony Cruz"], "", "Tony Cruz|Gino Renni"], ["Toy Story 2", "Cuando ella me quería", ["Cuando ella me quería Sara Ramírez Toy Story 2", "Cuando ella me quería"], "", "Sara Ramírez|Sara Ramirez"], ["Toy Story 3", "We Belong Together", ["We Belong Together Randy Newman"], "", "Randy Newman"], ["Monstruos, S. A.", "Si no te tuviera", ["Si no te tuviera Monstruos", "If I Didn't Have You Monsters Inc"], "", "Santiago Segura|José Mota|Billy Crystal|John Goodman"], ["Ratatouille", "Le Festin", ["Le Festin Camille"], "", "Camille"], ["Up", "Vida matrimonial (Married Life)", ["Married Life Michael Giacchino"], "", "Michael Giacchino"], ["Brave (Indomable)", "Toca el cielo", ["Toca el cielo Nuria Mediavilla", "Touch the Sky Brave"], "", "Nuria Mediavilla|Julie Fowlis"], ["Tiana y el sapo", "Llegaré", ["Almost There Anika Noni Rose"], "", "Anika Noni Rose"], ["Tiana y el sapo", "Casi lo consigo", ["Casi lo consigo Tiana y el sapo", "Down in New Orleans Anika Noni Rose"], "", "Anika Noni Rose|Tiana"], ["Enredados", "Veo en ti la luz", ["Veo en ti la luz Marta Sánchez David Bustamante"], "", "Marta Sánchez|David Bustamante"], ["Enredados", "Cuándo empezaré a vivir", ["Cuándo empezaré a vivir Marta Sánchez"], "", "Marta Sánchez"], ["Enredados", "Tengo un sueño", ["Tengo un sueño Enredados"], "", "Enredados|Reparto"], ["Encantada", "Así sabrás que es él", ["Así sabrás que es él Gisela", "That's How You Know Amy Adams"], "", "Gisela|Amy Adams"], ["Encantada", "Beso de amor", ["Beso de amor Gisela Encantada", "True Love's Kiss Enchanted"], "", "Gisela|Tony Menguiano|Amy Adams"], ["Mary Poppins", "Supercalifragilisticoespialidoso", ["Supercalifragilisticexpialidocious Julie Andrews Dick Van Dyke"], "", "Julie Andrews|Dick Van Dyke"], ["Mary Poppins", "Chim Chim Cher-ee", ["Chim Chim Cher-ee Dick Van Dyke Julie Andrews"], "", "Dick Van Dyke|Julie Andrews"], ["El libro de la selva", "Busca lo más vital", ["Busca lo más vital El libro de la selva"], "", "Philippe|Carlos Petrel"], ["El libro de la selva", "Quiero ser como tú", ["Quiero ser como tú El libro de la selva"], "", "José María Guzmán"], ["Tarzán", "En mi corazón vivirás", ["En mi corazón vivirás Phil Collins"], "", "Phil Collins"]],
+    posterBase: "https://upload.wikimedia.org/wikipedia/en/",
+    posters: {"El rey león": "3/3d/The_Lion_King_poster.jpg", "La sirenita": "c/c0/The_Little_Mermaid_%28Official_1989_Film_Poster%29.png", "Aladdín": "b/bd/Aladdin_%281992_Disney_film%29_poster.jpg", "Pocahontas": "5/57/Pocahontasposter.jpg", "La bella y la bestia": "5/5e/Beauty_and_the_Beast_%281991_film%29_poster.jpg", "Frozen: El reino del hielo": "0/05/Frozen_%282013_film%29_poster.jpg", "Coco": "9/98/Coco_%282017_film%29_poster.jpg", "Encanto": "8/83/Encanto_poster.jpg", "Vaiana": "2/26/Moana_Teaser_Poster.jpg", "Zootrópolis": "9/96/Zootopia_%28movie_poster%29.jpg", "Red": "9/9e/Turning_Red_poster.jpg", "Toy Story": "1/13/Toy_Story.jpg", "Toy Story 2": "c/c0/Toy_Story_2.jpg", "Toy Story 3": "6/69/Toy_Story_3_poster.jpg", "Monstruos, S. A.": "6/63/Monsters_Inc.JPG", "Ratatouille": "5/50/RatatouillePoster.jpg", "Up": "0/05/Up_%282009_film%29.jpg", "Brave (Indomable)": "9/96/Brave_Poster.jpg", "Tiana y el sapo": "8/81/The_Princess_and_the_Frog_poster.jpg", "Enredados": "a/a8/Tangled_poster.jpg", "Encantada": "2/2a/Enchantedposter.jpg", "Mary Poppins": "7/78/Marypoppins.jpg", "El libro de la selva": "1/1d/Thejunglebook_movieposter.jpg", "Tarzán": "4/4f/Tarzan_%281999_film%29_-_theatrical_poster.jpg"} }
 ];
 const $ = s => document.querySelector(s);
 const store = {
@@ -366,9 +479,12 @@ function startTv(){
     order: saved.order || [], cur: saved.cur ?? -1, revealed: !!saved.revealed,
     gen: saved.gen || randCode(4), winners: saved.winners || {}, starts: saved.starts || {},
     players: saved.players || {},         // id -> {name, code, marks:[], cells:[]}
-    list: saved.list || null, picks: saved.picks || {}
+    list: saved.list || null, picks: saved.picks || {},
+    mode: saved.mode || "bingo",
+    quiz: saved.quiz || { order: [], cur: -1, opts: [], correct: -1, answers: {}, revealed: false, scores: {}, finished: false }
   };
-  const save = () => store.set("bm_tv2", {room:T.room, songs:T.songs, order:T.order, cur:T.cur, revealed:T.revealed, gen:T.gen, winners:T.winners, starts:T.starts, players:T.players, list:T.list, picks:T.picks});
+  const Q = () => T.quiz;
+  const save = () => store.set("bm_tv2", {room:T.room, songs:T.songs, order:T.order, cur:T.cur, revealed:T.revealed, gen:T.gen, winners:T.winners, starts:T.starts, players:T.players, list:T.list, picks:T.picks, mode:T.mode, quiz:T.quiz});
   const conns = {};                       // id -> DataConnection
   let localFiles = {};                    // norm(title) -> File
   let peer = null;
@@ -395,7 +511,17 @@ function startTv(){
   function stateFor(id){
     const p = T.players[id]; if(!p) return null;
     const w = T.winners;
-    return { t:"state", name:p.name, code:p.code, n:Math.round(Math.sqrt(p.cells.length)),
+    if(T.mode === "quiz"){
+      const q = Q(), my = q.answers[id] || null;
+      const rk = quizRanking(), pos = rk.findIndex(r => r.id === id) + 1;
+      return { t:"state", mode:"quiz", name:p.name, r:q.cur, total:q.order.length, ask:(T.list && T.list.ask) || "¿Qué canción es?",
+        opts: q.cur >= 0 ? q.opts : [], revealed: q.revealed, correct: q.revealed ? q.correct : -1,
+        answer: q.revealed ? (q.cur >= 0 ? T.songs[q.order[q.cur][0]].t : "") : "",
+        my: my ? { c: my.c, pts: my.pts, ok: my.ok } : null, score: q.scores[id] || 0, pos, n: rk.length,
+        timeLeft: (!q.revealed && q.cur >= 0 && q.startAt) ? Math.max(0, Math.round((q.startAt + quizTime()*1000 - Date.now())/1000)) : 0,
+        finished: q.finished, podium: q.finished ? rk.slice(0,3).map(r => ({ name: r.name, score: r.score })) : null };
+    }
+    return { t:"state", mode:"bingo", name:p.name, code:p.code, n:Math.round(Math.sqrt(p.cells.length)),
       titles: p.cells.map(i => T.songs[i] ? T.songs[i].t : "?"), marks:p.marks,
       played: T.cur + 1, total: T.order.length,
       line: w.line ? w.line.name : null, bingo: w.bingo ? w.bingo.name : null,
@@ -422,6 +548,8 @@ function startTv(){
       const m = new Set(p.marks); d.on ? m.add(d.i) : m.delete(d.i); p.marks = [...m]; save(); renderBoard();
     } else if(d.t === "claim" && (d.type === "line" || d.type === "bingo")){
       judge(d.type, id);
+    } else if(d.t === "answer" && T.mode === "quiz"){
+      quizAnswer(id, d);
     }
   }
 
@@ -460,7 +588,7 @@ function startTv(){
       else banner(`${p.name} ha cantado línea… ¡pero todavía no vale!`, "small");
     } else {
       if(T.winners.bingo){ banner(`El bingo ya lo ganó ${T.winners.bingo.name}.`, "small"); return; }
-      if(ev.bingo){ T.winners.bingo = { id, name: p.name }; save(); stopAudio(); banner(`🏆 ¡BINGO! ¡${p.name} gana la partida!`); fanfare(); setTimeout(fanfare, 700); }
+      if(ev.bingo){ T.winners.bingo = { id, name: p.name }; save(); stopAudio(); stopCountdown(); banner(`🏆 ¡BINGO! ¡${p.name} gana la partida!`); fanfare(); setTimeout(fanfare, 700); }
       else banner(`${p.name} ha cantado bingo… ¡pero le faltan canciones!`, "small");
     }
     renderNow(); renderBoard(); broadcast();
@@ -511,6 +639,7 @@ function startTv(){
     ap.className = "pill " + (T.songs.length >= 12 && withAudio ? "on" : "off");
   }
   function renderBoard(){
+    if(T.mode === "quiz") renderQuiz();
     const ps = playedSet(), box = $("#players");
     const rows = Object.entries(T.players).map(([id,p]) => {
       const good = p.marks.filter(i => ps.has(p.cells[i])).length;
@@ -546,44 +675,74 @@ function startTv(){
   /* ---------- audio ---------- */
   function stopAudio(){
     clearTimeout(fragTimer); clearInterval(fadeTimer); cancelAnimationFrame(barRAF);
-    audio.pause(); $("#disc").classList.remove("spin"); $("#fragBar").style.width = "0";
+    audio.pause(); setSpin(false); setBar(0);
   }
-  async function playCurrent(){
+  function setSpin(on){ $("#disc").classList.toggle("spin", on); $("#qDisc").classList.toggle("spin", on); }
+  function setBar(p){ $("#fragBar").style.width = $("#qBar").style.width = (p*100) + "%"; }
+  /* Toca un trocito de la canción si (alternativa ai) y llama a onEnd al terminar */
+  async function playSong(si, ai, onEnd){
     stopAudio();
-    if(T.cur < 0) return;
-    const si = T.order[T.cur], s = T.songs[si];
+    const s = T.songs[si]; if(!s) return;
     const file = localFiles[norm(s.t)];
-    let src = s;
-    if(s.alts){
-      if(T.picks[si] == null || !s.alts[T.picks[si]] || !s.alts[T.picks[si]].url){
-        const ok = s.alts.map((a,i) => a.url ? i : -1).filter(i => i >= 0);
-        T.picks[si] = ok.length ? ok[Math.floor(Math.random()*ok.length)] : 0; save();
-      }
-      src = s.alts[T.picks[si]];
-    }
-    if(!file && !src.url){ banner("Esta canción no tiene audio: ponla o cántala, y pulsa «Resolver» cuando quieras.", "info"); return; }
+    const src = s.alts ? (s.alts[ai] || s.alts[0]) : s;
+    if(!file && !src.url){ banner("Esta canción no tiene audio: ponla o cántala, y desvélala cuando quieras.", "info"); return; }
     if(curUrl){ URL.revokeObjectURL(curUrl); curUrl = null; }
     if(file){ curUrl = URL.createObjectURL(file); audio.src = curUrl; } else audio.src = await freshUrl(src);
     await new Promise(res => { if(audio.readyState >= 1) return res(); audio.onloadedmetadata = res; audio.onerror = res; setTimeout(res, 8000); });
     const len = +$("#fragLen").value, dur = isFinite(audio.duration) ? audio.duration : 0;
-    if(T.starts[si] == null){
+    const key = si + ":" + (ai ?? "");
+    if(T.starts[key] == null){
       let st = 0;
       if($("#randStart").checked && dur > len + 2){
         st = dur > 60 ? dur*0.1 + Math.random()*Math.max(0, dur*0.7 - len) : Math.random()*(dur - len);
       }
-      T.starts[si] = Math.floor(st); save();
+      T.starts[key] = Math.floor(st); save();
     }
-    try{ audio.currentTime = T.starts[si]; }catch(e){}
+    try{ audio.currentTime = T.starts[key]; }catch(e){}
     audio.volume = 1;
     try{ await audio.play(); }catch(e){ banner("No se ha podido reproducir. Pulsa «Repetir trocito».", "small"); return; }
-    $("#disc").classList.add("spin");
+    setSpin(true);
     const t0 = performance.now();
-    const tick = () => { const p = Math.min(1, (performance.now() - t0) / (len*1000)); $("#fragBar").style.width = (p*100) + "%"; if(p < 1) barRAF = requestAnimationFrame(tick); };
+    const tick = () => { const p = Math.min(1, (performance.now() - t0) / (len*1000)); setBar(p); if(p < 1) barRAF = requestAnimationFrame(tick); };
     tick();
     fragTimer = setTimeout(() => {
       let v = 1; fadeTimer = setInterval(() => { v -= 0.1; audio.volume = Math.max(0, v);
-        if(v <= 0){ clearInterval(fadeTimer); stopAudio(); if($("#autoReveal").checked) reveal(); } }, 120);
+        if(v <= 0){ clearInterval(fadeTimer); stopAudio(); if(onEnd) onEnd(); } }, 120);
     }, Math.max(0, len*1000 - 1200));
+  }
+  function bingoPick(si){
+    const s = T.songs[si]; if(!s || !s.alts) return null;
+    if(T.picks[si] == null || !s.alts[T.picks[si]] || !s.alts[T.picks[si]].url){
+      const ok = s.alts.map((a,i) => a.url ? i : -1).filter(i => i >= 0);
+      T.picks[si] = ok.length ? ok[Math.floor(Math.random()*ok.length)] : 0; save();
+    }
+    return T.picks[si];
+  }
+  async function playCurrent(){
+    if(T.cur < 0) return;
+    const si = T.order[T.cur];
+    await playSong(si, bingoPick(si), () => {
+      if($("#autoReveal").checked) reveal();
+      startCountdown(nextBingo, $("#btnNext"), "▶ Siguiente canción");
+    });
+  }
+
+  /* ---------- cuenta atrás para pasar sola ---------- */
+  let cdTimer = null, cdBtn = null, cdLabel = "";
+  function stopCountdown(){
+    clearInterval(cdTimer); cdTimer = null;
+    if(cdBtn){ cdBtn.textContent = cdLabel; cdBtn = null; }
+  }
+  function startCountdown(fn, btn, label){
+    stopCountdown();
+    if(!$("#autoNext").checked || btn.disabled) return;
+    let left = 10; cdBtn = btn; cdLabel = label;
+    btn.textContent = `${label} (${left})`;
+    cdTimer = setInterval(() => {
+      left--;
+      if(left <= 0){ stopCountdown(); fn(); }
+      else btn.textContent = `${label} (${left})`;
+    }, 1000);
   }
   function reveal(){ if(T.cur < 0) return; T.revealed = true; save(); renderNow(); }
 
@@ -597,14 +756,15 @@ function startTv(){
   }
   document.addEventListener("pointerdown", unlockAudio, { capture:true });
 
-  $("#btnNext").onclick = () => {
-    unlockAudio();
+  function nextBingo(){
+    stopCountdown();
     if(T.cur >= T.order.length - 1 || T.winners.bingo) return;
     T.cur++; T.revealed = false; save(); renderNow(); renderBoard(); broadcast(); playCurrent();
-  };
-  $("#btnReplay").onclick = () => { unlockAudio(); playCurrent(); };
+  }
+  $("#btnNext").onclick = () => { unlockAudio(); nextBingo(); };
+  $("#btnReplay").onclick = () => { unlockAudio(); stopCountdown(); playCurrent(); };
   $("#btnReveal").onclick = reveal;
-  $("#btnStop").onclick = stopAudio;
+  $("#btnStop").onclick = () => { stopAudio(); stopCountdown(); };
 
   /* ---------- partida ---------- */
   function newGame(){
@@ -617,14 +777,17 @@ function startTv(){
   function listChanged(){
     const seen = new Set();
     T.songs = T.songs.filter(s => { const k = norm(s.t); if(!k || seen.has(k)) return false; seen.add(k); return true; });
-    newGame();
+    newGame(); resetQuiz();
     if(T.songs.length < 12) banner(`Hacen falta al menos 12 canciones (ahora hay ${T.songs.length}).`, "small");
   }
-  $("#btnNewGame").onclick = () => { newGame(); banner("Partida nueva: cartones repartidos", "info"); };
+  $("#btnNewGame").onclick = () => {
+    if(T.mode === "quiz"){ resetQuiz(); banner("Partida nueva de «Adivina la canción»", "info"); }
+    else { newGame(); banner("Partida nueva: cartones repartidos", "info"); }
+  };
   $("#btnNewRoom").onclick = () => {
     for(const id in conns){ try{ conns[id].close(); }catch(e){} }
     T.players = {}; T.room = randCode(5); try{ peer.destroy(); }catch(e){}
-    newGame(); drawQr(); startPeer();
+    newGame(); resetQuiz(); drawQr(); startPeer();
   };
   $("#btnDefault").onclick = () => { T.songs = T.songs.concat(DEFAULT_SONGS.map(t => ({t}))); listChanged(); };
   $("#btnClear").onclick = () => { T.songs = []; T.list = null; listChanged(); };
@@ -678,6 +841,8 @@ function startTv(){
     const want = norm(a.song.replace(/\(.*?\)/g, ""));
     if(want && norm(r.t).includes(want)) sc += 3;
     if(/remaster|mix|edit/i.test(r.t)) sc -= 1;
+    const mv = norm(String(a.movie || "").split(/[:(,]/)[0]);
+    if(mv.length > 2 && norm(r.album || "").includes(mv)) sc += 4;
     return sc;
   }
   async function findTrack(a){
@@ -796,7 +961,7 @@ function startTv(){
     for(const [label, song, q, imgq, artist] of L.items){
       const k = norm(label);
       if(!groups.has(k)) groups.set(k, { t: label, imgq, alts: [], img: (L.posters && L.posters[label]) ? (L.posterBase || "") + L.posters[label] : "" });
-      groups.get(k).alts.push({ song, q, artist: artist || "" });
+      groups.get(k).alts.push({ song, q, artist: artist || "", movie: label });
     }
     T.songs = [...groups.values()];
     T.list = { id: L.id, name: L.name, ask: L.ask };
@@ -814,10 +979,173 @@ function startTv(){
     listChanged(); banner(`${sel.length} canciones añadidas`, "info");
   };
 
+
+  /* =========== ADIVINA LA CANCIÓN =========== */
+  const quizTime = () => +$("#qTime").value || 20;
+  let qTimer = null;
+  function quizRounds(){
+    const r = [];
+    T.songs.forEach((s, si) => {
+      if(s.alts){ s.alts.forEach((a, ai) => { if(a.url) r.push([si, ai]); }); }
+      else if(hasAudio(s) || true) r.push([si, -1]);
+    });
+    return r;
+  }
+  function resetQuiz(){
+    clearInterval(qTimer); stopCountdown();
+    const keep = {};
+    T.quiz = { order: [], cur: -1, opts: [], correct: -1, answers: {}, revealed: false, scores: keep, finished: false };
+    $("#podium").hidden = true;
+    save(); renderQuiz(); broadcast();
+  }
+  function quizRanking(){
+    const q = Q();
+    return Object.entries(T.players).map(([id, p]) => ({ id, name: p.name, score: q.scores[id] || 0, online: !!(conns[id] && conns[id].open) }))
+      .sort((a, b) => b.score - a.score || a.name.localeCompare(b.name));
+  }
+  function nextRound(){
+    stopCountdown(); clearInterval(qTimer);
+    const q = Q();
+    if(q.finished) return;
+    if(q.cur < 0 && !q.order.length){
+      const all = shuffle(quizRounds()), n = +$("#qCount").value;
+      if(new Set(T.songs.map(s => s.t)).size < 4 || !all.length){ banner("Hacen falta al menos 4 títulos distintos con música para jugar.", "small"); return; }
+      q.order = n ? all.slice(0, n) : all; q.scores = {};
+    }
+    if(q.cur >= q.order.length - 1){ finishQuiz(); return; }
+    q.cur++;
+    const [si, ai] = q.order[q.cur];
+    const right = T.songs[si].t;
+    const others = shuffle([...new Set(T.songs.map(s => s.t))].filter(t => t !== right)).slice(0, 3);
+    q.opts = shuffle([right, ...others]); q.correct = q.opts.indexOf(right);
+    q.answers = {}; q.revealed = false; q.first = null; q.startAt = Date.now();
+    save(); renderQuiz(); broadcast();
+    playSong(si, ai >= 0 ? ai : null, null);
+    qTimer = setInterval(() => {
+      const left = q.startAt + quizTime()*1000 - Date.now();
+      renderQuizStatus();
+      if(left <= 0) revealRound();
+    }, 500);
+  }
+  function quizAnswer(id, d){
+    const q = Q();
+    if(q.revealed || q.finished || d.r !== q.cur || q.answers[id] || !Number.isInteger(d.c) || d.c < 0 || d.c > 3) return;
+    const ms = Date.now() - q.startAt, ok = d.c === q.correct;
+    let pts = 0;
+    if(ok){
+      pts = Math.round(500 + 500 * Math.max(0, 1 - ms / (quizTime()*1000)));
+      if(!q.first){ q.first = id; pts += 100; }
+    }
+    q.answers[id] = { c: d.c, ms, ok, pts, first: q.first === id && ok };
+    save(); renderQuiz(); send(id, stateFor(id));
+    const online = Object.keys(T.players).filter(pid => conns[pid] && conns[pid].open);
+    if(online.length && online.every(pid => q.answers[pid])) setTimeout(revealRound, 600);
+  }
+  function revealRound(){
+    const q = Q();
+    if(q.revealed || q.cur < 0) return;
+    clearInterval(qTimer);
+    q.revealed = true;
+    for(const [id, a] of Object.entries(q.answers)) q.scores[id] = (q.scores[id] || 0) + a.pts;
+    save(); renderQuiz(); broadcast();
+    const last = q.cur >= q.order.length - 1;
+    startCountdown(nextRound, $("#qNext"), last ? "🏁 Ver podio" : "▶ Siguiente canción");
+  }
+  function finishQuiz(){
+    stopCountdown(); clearInterval(qTimer); stopAudio();
+    const q = Q(); q.finished = true; save();
+    renderQuiz(); showPodium(); broadcast();
+    fanfare(); setTimeout(fanfare, 800);
+  }
+  function showPodium(){
+    const rk = quizRanking();
+    const medal = ["🥇","🥈","🥉"], cls = ["g","s","b"], order = [1,0,2];
+    $("#podSteps").innerHTML = order.map(i => {
+      const r = rk[i];
+      return r ? `<div class="step ${cls[i]}"><div class="cup">${medal[i]}</div><div class="who">${esc(r.name)}</div><div class="pts">${r.score} puntos</div><div class="block">${i+1}</div></div>` : `<div></div>`;
+    }).join("");
+    $("#podRest").innerHTML = rk.slice(3).map((r, i) => `<div class="rank"><span class="pos">${i+4}</span><span class="nm">${esc(r.name)}</span><span class="sc">${r.score}</span></div>`).join("");
+    $("#podium").hidden = false;
+  }
+  $("#podClose").onclick = () => { $("#podium").hidden = true; };
+  $("#podAgain").onclick = () => { resetQuiz(); };
+
+  function renderQuizStatus(){
+    const q = Q();
+    const online = Object.keys(T.players).filter(pid => conns[pid] && conns[pid].open);
+    const n = Object.keys(q.answers).length;
+    let txt = "";
+    if(q.finished) txt = "Partida terminada";
+    else if(q.cur < 0) txt = Object.keys(T.players).length ? `${Object.keys(T.players).length} jugadores preparados` : "Que cada uno escanee el QR para jugar";
+    else if(q.revealed) txt = `${Object.values(q.answers).filter(a => a.ok).length} de ${Math.max(n, online.length)} han acertado`;
+    else txt = `⏱ ${Math.max(0, Math.ceil((q.startAt + quizTime()*1000 - Date.now())/1000))} s · ${n} de ${online.length} han respondido`;
+    $("#qStatus").textContent = txt;
+  }
+  function renderQuiz(){
+    const q = Q();
+    const si = q.cur >= 0 ? q.order[q.cur][0] : -1, ai = q.cur >= 0 ? q.order[q.cur][1] : -1;
+    const s = si >= 0 ? T.songs[si] : null, alt = s && s.alts && ai >= 0 ? s.alts[ai] : null;
+    const last = q.cur >= q.order.length - 1 && q.order.length > 0;
+    $("#qNum").textContent = q.cur < 0 ? (q.finished ? "Partida terminada" : "Pulsa «Empezar»") : `Canción ${q.cur + 1} de ${q.order.length}`;
+    const t = $("#qTitle");
+    if(q.cur < 0){ t.textContent = "· · · · ·"; t.className = "now-title hid"; }
+    else if(q.revealed){ t.textContent = s.t; t.className = "now-title"; }
+    else { t.textContent = (T.list && T.list.ask) || "¿Qué canción es?"; t.className = "now-title hid"; }
+    const img = $("#qImg"), showImg = q.revealed && s && s.img;
+    img.onerror = () => { img.hidden = true; $("#qDisc").hidden = false; };
+    img.hidden = !showImg; if(showImg && img.getAttribute("src") !== s.img) img.src = s.img;
+    $("#qDisc").hidden = !!showImg;
+    $("#qSong").hidden = !(q.revealed && alt);
+    if(q.revealed && alt) $("#qSong").innerHTML = "🎵 <b>" + esc(alt.song) + "</b>";
+    $("#qOptsTv").innerHTML = q.cur >= 0 ? q.opts.map((o, i) =>
+      `<div class="q-opt c${i}${q.revealed && i !== q.correct ? " dim" : ""}${q.revealed && i === q.correct ? " right" : ""}"><b class="q-letter">${"ABCD"[i]}</b> <span>${esc(o)}</span></div>`).join("") : "";
+    if(!cdTimer) $("#qNext").textContent = q.finished ? "🏆 Ver podio" : q.cur < 0 ? "▶ Empezar" : (q.revealed && last) ? "🏁 Ver podio" : "▶ Siguiente canción";
+    $("#qReveal").disabled = q.cur < 0 || q.revealed || q.finished;
+    $("#qReplay").disabled = q.cur < 0 || q.finished;
+    $("#qEnd").disabled = q.cur < 0 || q.finished;
+    $("#qResults").innerHTML = q.revealed ? Object.entries(q.answers).sort((a, b) => b[1].pts - a[1].pts).map(([id, a]) => {
+      const p = T.players[id]; if(!p) return "";
+      return `<div class="r${a.ok ? "" : " no"}"><span>${a.ok ? "✅" : "❌"} ${esc(p.name)}${a.first ? " ⚡" : ""} <small class="muted">${(a.ms/1000).toFixed(1)} s</small></span><b>+${a.pts}</b></div>`;
+    }).join("") || '<div class="muted">Nadie ha respondido.</div>' : "";
+    renderQuizStatus();
+    const rk = quizRanking();
+    $("#qBoard").innerHTML = rk.length ? rk.map((r, i) => {
+      const a = q.answers[r.id];
+      const sub = q.revealed && a ? (a.ok ? `+${a.pts}${a.first ? " ⚡ el más rápido" : ""}` : "falló") : (!q.revealed && a ? "ha respondido" : "");
+      return `<div class="rank${r.online ? "" : " offline"}"><span class="pos">${i < 3 && r.score ? ["🥇","🥈","🥉"][i] : i+1}</span><span class="nm">${esc(r.name)}${sub ? `<small>${esc(sub)}</small>` : ""}</span><span class="sc">${r.score}</span></div>`;
+    }).join("") : '<div class="empty">Aún no hay jugadores. Que cada uno escanee el QR con su móvil y escriba su nombre.</div>';
+  }
+  $("#qNext").onclick = () => {
+    unlockAudio();
+    const q = Q();
+    if(q.finished){ showPodium(); return; }
+    if(q.cur >= 0 && !q.revealed){ revealRound(); return; }
+    nextRound();
+  };
+  $("#qReplay").onclick = () => { unlockAudio(); stopCountdown(); const q = Q(); if(q.cur < 0) return; const [si, ai] = q.order[q.cur]; playSong(si, ai >= 0 ? ai : null, null); };
+  $("#qReveal").onclick = () => revealRound();
+  $("#qStop").onclick = () => { stopAudio(); stopCountdown(); };
+  $("#qEnd").onclick = () => { const q = Q(); if(q.cur >= 0 && !q.revealed) revealRound(); finishQuiz(); };
+
+  /* ---------- cambio de juego ---------- */
+  function setMode(m){
+    stopAudio(); stopCountdown(); clearInterval(qTimer);
+    T.mode = m; save();
+    $("#modeBingo").classList.toggle("on", m === "bingo"); $("#modeQuiz").classList.toggle("on", m === "quiz");
+    $("#bingoView").hidden = m !== "bingo"; $("#quizView").hidden = m !== "quiz";
+    $("#qrText").textContent = m === "quiz" ? "Escanea con el móvil para jugar" : "Escanea con el móvil para recibir tu cartón";
+    if(m === "quiz"){ const q = Q(); if(q.cur >= 0 && !q.revealed && !q.finished){ q.revealed = false; } renderQuiz(); } else { renderNow(); renderBoard(); }
+    broadcast();
+  }
+  $("#modeBingo").onclick = () => setMode("bingo");
+  $("#modeQuiz").onclick = () => setMode("quiz");
+
   /* ---------- inicio ---------- */
   if(!T.order.length || T.order.length !== T.songs.length) T.order = shuffle(T.songs.map((_,i) => i));
   for(const id in T.players){ const p = T.players[id]; if(!p.cells || p.cells.some(i => i >= T.songs.length)) dealCard(p); }
+  if(T.quiz.cur >= 0 && !T.quiz.revealed && !T.quiz.finished){ T.quiz.revealed = true; }
   save(); drawQr(); renderNow(); renderBoard(); renderSongs();
+  setMode(T.mode);
   $("#tvBanner").innerHTML = winnersBanner();
   if(T.cur < 0) $("#setup").open = true;
   try{ navigator.wakeLock && navigator.wakeLock.request("screen").catch(() => {}); }catch(e){}
@@ -865,11 +1193,56 @@ function startPlayer(room){
   function scheduleRetry(){ clearTimeout(retry); retry = setTimeout(() => { if(!conn || !conn.open) connect(); }, 3000); }
   function sendMsg(m){ if(conn && conn.open){ try{ conn.send(m); return true; }catch(e){} } return false; }
 
+  let qpTick = null, qpPicked = null, qpRound = null;
+  function renderQuizPlayer(){
+    $("#cardWrap").hidden = true; $("#quizWrap").hidden = false;
+    if(S.r !== qpRound){ qpRound = S.r; qpPicked = null; }
+    const picked = S.my ? S.my.c : qpPicked;
+    $("#qpNum").textContent = S.r >= 0 ? `Canción ${S.r + 1} de ${S.total}` : "Adivina la canción";
+    $("#qpWho").textContent = `${S.name} · ${S.pos ? S.pos + "º de " + S.n : ""}`;
+    $("#qpScore").textContent = `${S.score} pts`;
+    const opts = $("#qpOpts"); opts.innerHTML = "";
+    clearInterval(qpTick); $("#qpTimer").textContent = "";
+    if(S.finished){
+      const medal = ["🥇","🥈","🥉"];
+      $("#qpAsk").innerHTML = S.pos && S.pos <= 3 ? `${medal[S.pos-1]}<br>¡Has quedado ${S.pos}º!` : `Has quedado ${S.pos}º`;
+      $("#qpResult").innerHTML = (S.podium || []).map((r, i) => `${medal[i]} ${esc(r.name)} · ${r.score}`).join("<br>");
+      return;
+    }
+    if(S.r < 0){ $("#qpAsk").textContent = "Esperando a que empiece la partida…"; $("#qpResult").textContent = ""; return; }
+    $("#qpAsk").textContent = S.ask;
+    const colors = ["#e2445c","#2e86de","#e8a317","#20a464"], icons = ["A","B","C","D"];
+    S.opts.forEach((o, i) => {
+      const b = document.createElement("button"); b.type = "button";
+      b.style.background = colors[i]; b.innerHTML = `<b class="q-letter">${icons[i]}</b> ${esc(o)}`;
+      if(picked === i) b.classList.add("picked");
+      if(S.revealed && i !== S.correct) b.classList.add("dim");
+      if(picked != null && picked !== i && !S.revealed) b.classList.add("dim");
+      b.disabled = S.revealed || picked != null;
+      b.onclick = () => {
+        if(!sendMsg({ t:"answer", r:S.r, c:i })){ setConn("Sin conexión: espera un momento", false); return; }
+        qpPicked = i; if(navigator.vibrate) try{ navigator.vibrate(20); }catch(e){}
+        renderQuizPlayer();
+      };
+      opts.appendChild(b);
+    });
+    if(S.revealed){
+      $("#qpResult").innerHTML = S.my ? (S.my.ok ? `✅ ¡Correcto! +${S.my.pts}` : `❌ Era: ${esc(S.answer)}`) : `Era: ${esc(S.answer)}`;
+    } else {
+      $("#qpResult").textContent = picked != null ? "Respuesta enviada. ¡Mira la TV!" : "";
+      let left = S.timeLeft;
+      const draw = () => { $("#qpTimer").textContent = left > 0 ? `⏱ ${left} s` : ""; };
+      draw(); qpTick = setInterval(() => { left--; draw(); if(left <= 0) clearInterval(qpTick); }, 1000);
+    }
+  }
   function render(){
-    if(!P.name){ $("#nameForm").hidden = false; $("#cardWrap").hidden = true; $("#waitBox").hidden = true; return; }
+    if(!P.name){ $("#nameForm").hidden = false; $("#cardWrap").hidden = true; $("#quizWrap").hidden = true; $("#waitBox").hidden = true; return; }
     $("#nameForm").hidden = true;
-    if(!S){ $("#cardWrap").hidden = true; wait("Conectando con la TV…"); return; }
-    $("#waitBox").hidden = true; $("#cardWrap").hidden = false;
+    if(!S){ $("#cardWrap").hidden = true; $("#quizWrap").hidden = true; wait("Conectando con la TV…"); return; }
+    $("#waitBox").hidden = true;
+    if(S.mode === "quiz"){ $("#pBanner").innerHTML = ""; renderQuizPlayer(); return; }
+    $("#quizWrap").hidden = true; clearInterval(qpTick);
+    $("#cardWrap").hidden = false;
     $("#cardWho").textContent = S.name; $("#cardCode").textContent = S.code;
     const g = $("#grid"); g.className = "grid g" + S.n; g.style.gridTemplateColumns = `repeat(${S.n},1fr)`;
     const marks = new Set(S.marks || []);
@@ -904,7 +1277,7 @@ function startPlayer(room){
     P.name = v; save(); render();
     if(conn && conn.open) conn.send({ t:"hello", id:P.id, name:P.name }); else connect();
   };
-  $("#btnRename").onclick = () => { $("#nameInput").value = P.name || ""; P.name = ""; save(); render(); };
+  $("#btnRename").onclick = $("#btnRename2").onclick = () => { $("#nameInput").value = P.name || ""; P.name = ""; save(); render(); };
   document.addEventListener("visibilitychange", () => { if(!document.hidden && P.name && (!conn || !conn.open)) connect(); });
 
   render(); connect();
