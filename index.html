@@ -282,6 +282,7 @@ details.setup summary{font-family:var(--display);font-size:22px;cursor:pointer}
         <button id="qReveal">👁 Desvelar</button>
         <button id="qStop" class="ghost">■ Parar</button>
         <button id="qEnd" class="ghost">🏁 Terminar</button>
+        <button id="qReshuffle" class="ghost">🔀 Repetir con otro orden</button>
       </div>
       <div id="qResults" class="q-res"></div>
     </section>
@@ -1157,6 +1158,7 @@ function startTv(){
     $("#qReveal").disabled = q.cur < 0 || q.revealed || q.finished;
     $("#qReplay").disabled = q.cur < 0 || q.finished;
     $("#qEnd").disabled = q.cur < 0 || q.finished;
+    $("#qReshuffle").disabled = q.cur < 0 && !q.finished;
     $("#qResults").innerHTML = q.revealed ? Object.entries(q.answers).sort((a, b) => b[1].pts - a[1].pts).map(([id, a]) => {
       const p = T.players[id]; if(!p) return "";
       return `<div class="r${a.ok ? "" : " no"}"><span>${a.ok ? "✅" : "❌"} ${esc(p.name)}${a.first ? " ⚡" : ""} <small class="muted">${(a.ms/1000).toFixed(1)} s</small></span><b>+${a.pts}</b></div>`;
@@ -1179,6 +1181,7 @@ function startTv(){
   $("#qReplay").onclick = () => { unlockAudio(); stopCountdown(); const q = Q(); if(q.cur < 0) return; const [si, ai] = q.order[q.cur]; playSong(si, ai >= 0 ? ai : null, null); };
   $("#qReveal").onclick = () => revealRound();
   $("#qStop").onclick = () => { stopAudio(); stopCountdown(); };
+  $("#qReshuffle").onclick = () => { stopAudio(); resetQuiz(); banner("Mismas canciones en otro orden y marcador a cero. Pulsa «Empezar»", "info"); };
   $("#qEnd").onclick = () => { const q = Q(); if(q.cur >= 0 && !q.revealed) revealRound(); finishQuiz(); };
 
   /* ---------- cambio de juego ---------- */
